@@ -54,11 +54,14 @@ set(SPARROW_HEADERS
     ${SPARROW_INCLUDE_DIR}/sparrow/buffer.hpp
     ${SPARROW_INCLUDE_DIR}/sparrow/fixed_size_layout.hpp
     ${SPARROW_INCLUDE_DIR}/sparrow/data_type.hpp
+    ${SPARROW_INCLUDE_DIR}/sparrow/data_traits.hpp
     ${SPARROW_INCLUDE_DIR}/sparrow/dynamic_bitset.hpp
     ${SPARROW_INCLUDE_DIR}/sparrow/iterator.hpp
     ${SPARROW_INCLUDE_DIR}/sparrow/mp_utils.hpp
     ${SPARROW_INCLUDE_DIR}/sparrow/sparrow_version.hpp
     ${SPARROW_INCLUDE_DIR}/sparrow/variable_size_binary_layout.hpp
+
+    ${SPARROW_INCLUDE_DIR}/sparrow/details/3rdparty/float16_t.hpp
 )
 
 add_library(sparrow INTERFACE)
