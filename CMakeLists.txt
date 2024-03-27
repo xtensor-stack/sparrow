@@ -43,6 +43,15 @@ message(STATUS "Building sparrow v${${PROJECT_NAME}_VERSION}")
 
 OPTION(BUILD_TESTS "sparrow test suite" OFF)
 
+# Linter options
+# =============
+
+OPTION(ACTIVATE_LINTER "Create targets to run clang-format" OFF)
+
+if(ACTIVATE_LINTER)
+    include(cmake/clang-format.cmake)
+endif()
+
 # Dependencies
 # ============
 

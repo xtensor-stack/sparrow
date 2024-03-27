@@ -18,8 +18,7 @@ enable_testing()
 
 if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
     project(sparrow-test CXX)
-
-    find_package(sparrowREQUIRED CONFIG)
+    find_package(sparrow REQUIRED CONFIG)
     set(SPARROW_INCLUDE_DIR ${sparrow_INCLUDE_DIRS})
 endif ()
 
