@@ -156,7 +156,7 @@ namespace sparrow
         using const_bitmap_range = std::ranges::subrange<const_bitmap_iterator>;
         using const_value_range = std::ranges::subrange<const_value_iterator>;
 
-        explicit variable_size_binary_layout(array_data data);
+        explicit variable_size_binary_layout(array_data& data);
 
         size_type size() const;
         const_reference operator[](size_type i) const;
@@ -179,7 +179,7 @@ namespace sparrow
         const_offset_iterator offset_end() const;
         const_data_iterator data(size_type i) const;
 
-        array_data m_data;
+        array_data* p_data;
 
         friend class const_reference_proxy<self_type>;
         friend class vs_binary_value_iterator<self_type, true>;
@@ -246,19 +246,19 @@ namespace sparrow
      **********************************************/
 
     template <class T, class R, class CR, layout_offset OT>
-    variable_size_binary_layout<T, R, CR, OT>::variable_size_binary_layout(array_data data)
-        : m_data(std::move(data))
+    variable_size_binary_layout<T, R, CR, OT>::variable_size_binary_layout(array_data& data)
+        : p_data(&data)
     {
-        assert(m_data.buffers.size() == 2u);
+        assert(p_data->buffers.size() == 2u);
         //TODO: templatize back and front in buffer and uncomment the following line
-        //assert(m_data.buffers[0].size() == 0u || m_data.buffers[0].back() == m_data.buffers[1].size());
+        //assert(p_data->buffers[0].size() == 0u || p_data->buffers[0].back() == p_data->buffers[1].size());
     }
 
     template <class T, class R, class CR, layout_offset OT>
     auto variable_size_binary_layout<T, R, CR, OT>::size() const -> size_type
     {
-        assert(m_data.offset <= m_data.length);
-        return static_cast<size_type>(m_data.length - m_data.offset);
+        assert(p_data->offset <= p_data->length);
+        return static_cast<size_type>(p_data->length - p_data->offset);
     }
 
     template <class T, class R, class CR, layout_offset OT>
@@ -283,13 +283,13 @@ namespace sparrow
     template <class T, class R, class CR, layout_offset OT>
     auto variable_size_binary_layout<T, R, CR, OT>::bitmap_cbegin() const -> const_bitmap_iterator
     {
-        return m_data.bitmap.cbegin() + m_data.offset;
+        return p_data->bitmap.cbegin() + p_data->offset;
     }
 
     template <class T, class R, class CR, layout_offset OT>
     auto variable_size_binary_layout<T, R, CR, OT>::bitmap_cend() const -> const_bitmap_iterator
     {
-        return m_data.bitmap.cend();
+        return p_data->bitmap.cend();
     }
 
     template <class T, class R, class CR, layout_offset OT>
@@ -307,7 +307,7 @@ namespace sparrow
     template <class T, class R, class CR, layout_offset OT>
     auto variable_size_binary_layout<T, R, CR, OT>::has_value(size_type i) const -> bool
     {
-        return m_data.bitmap.test(i + m_data.offset);
+        return p_data->bitmap.test(i + p_data->offset);
     }
 
     template <class T, class R, class CR, layout_offset OT>
@@ -319,22 +319,22 @@ namespace sparrow
     template <class T, class R, class CR, layout_offset OT>
     auto variable_size_binary_layout<T, R, CR, OT>::offset(size_type i) const -> const_offset_iterator
     {
-        assert(!m_data.buffers.empty());
-        return m_data.buffers[0].template data<OT>() + m_data.offset + i;
+        assert(!p_data->buffers.empty());
+        return p_data->buffers[0].template data<OT>() + p_data->offset + i;
     }
 
     template <class T, class R, class CR, layout_offset OT>
     auto variable_size_binary_layout<T, R, CR, OT>::offset_end() const -> const_offset_iterator
     {
-        assert(!m_data.buffers.empty());
-        return m_data.buffers[0].template data<OT>() + m_data.length;
+        assert(!p_data->buffers.empty());
+        return p_data->buffers[0].template data<OT>() + p_data->length;
     }
 
     template <class T, class R, class CR, layout_offset OT>
     auto variable_size_binary_layout<T, R, CR, OT>::data(size_type i) const -> const_data_iterator
     {
-        assert(!m_data.buffers.empty());
-        return m_data.buffers[1].template data<data_type>() + i;
+        assert(!p_data->buffers.empty());
+        return p_data->buffers[1].template data<data_type>() + i;
     }
 }
 
