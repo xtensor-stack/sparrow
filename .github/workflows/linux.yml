@@ -62,7 +62,9 @@ jobs:
         cache-downloads: true
 
     - name: Configure using CMake
-      run: cmake -G Ninja -Bbuild ${{matrix.sys.config-flags}} -DCMAKE_BUILD_TYPE:STRING=${{matrix.config.name}} -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX -DBUILD_TESTS=ON
+      run: |
+        activate_linter=${{ matrix.sys.compiler == 'clang' && 'ON' || 'OFF' }}
+        cmake -G Ninja -Bbuild ${{matrix.sys.config-flags}} -DCMAKE_BUILD_TYPE:STRING=${{matrix.config.name}} -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX -DBUILD_TESTS=ON -DACTIVATE_LINTER=$activate_linter
 
     - name: Install
       working-directory: build
@@ -75,3 +77,8 @@ jobs:
     - name: Run tests
       working-directory: build
       run: ctest -C ${{matrix.config.name}} --output-on-failure
+
+    - name: Run clang-format dry-run
+      if: matrix.sys.compiler == 'clang'
+      working-directory: build
+      run: cmake --build . --config ${{matrix.config.name}} --target clang-format_dry_run
