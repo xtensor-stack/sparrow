@@ -90,6 +90,21 @@ namespace sparrow
             // CHECK_EQ(citer, lt_values.end());
         }
 
+        TEST_CASE("iterator")
+        {
+            layout_test_type lt(make_test_array_data());
+            auto it = lt.begin();
+            auto end = lt.end();
+
+            for (std::size_t i = 0; it != end; ++it, ++i)
+            {
+                CHECK_EQ(*it, std::make_optional(lt[i].value()));
+                REQUIRE(it->has_value());
+            }
+
+            CHECK_EQ(it, end);
+        }
+
     }
 
 }
