@@ -30,7 +30,6 @@ jobs:
 
     steps:
 
-
     - name: Install GCC
       if: matrix.sys.compiler == 'gcc'
       uses: egor-tensin/setup-gcc@v1
@@ -77,14 +76,6 @@ jobs:
     - name: Run tests
       working-directory: build
       run: ctest -C ${{matrix.config.name}} --output-on-failure
-
-    - name: Check clang-format version
-      working-directory: build
-      run: clang-format --version
-
-    - name: Check clang-format help
-      working-directory: build
-      run: clang-format --help
 
     - name: Run clang-format dry-run
       if: matrix.sys.compiler == 'clang'
