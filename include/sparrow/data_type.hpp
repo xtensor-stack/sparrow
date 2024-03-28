@@ -112,7 +112,7 @@ namespace sparrow
     /// The follwing information must be provided if the type is an arrow type:
     /// - type_id : the runtime identifier value for that type, see `data_type`
     /// - value_type : the value representation type to use in C++ (usually T)
-    /// - base_layout: the layout to use for that type FIXME: be more precise than that
+    /// - default_layout: the layout to use for that type FIXME: be more precise than that
     /// - MORE TO COME SOON, SEE TODOs BELOW
     ///
     /// @tparam Type for C++ value-representation that this type describes the traits of.

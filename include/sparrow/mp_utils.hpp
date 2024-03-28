@@ -41,8 +41,8 @@ namespace sparrow::mpl
 
     /// Matches any type which is an instance of `typelist`.
     /// Examples:
-    ///     stati_assert(any_typelist< typelist<int, float, std::vector<int> > > == true);
-    ///     stati_assert(any_typelist< std::vector<int> > == false);
+    ///     static_assert(any_typelist< typelist<int, float, std::vector<int> > > == true);
+    ///     static_assert(any_typelist< std::vector<int> > == false);
     template< typename TList >
     concept any_typelist = is_type_instance_of_v<TList, typelist>;
 
@@ -57,7 +57,7 @@ namespace sparrow::mpl
     using constify_t = typename constify<T, is_const>::type;
 
     /// Checks that at least one type in the provided list of is making the provide predicate return `true`.
-    /// @returns `true` if for any type T in the type list L, `Predicate{}(typelist<T>) == true`.
+    /// @returns 'true' if for at least one type T in the type list L,, `Predicate{}(typelist<T>) == true`.
     ///          `false` otherwise or if the list is empty.
     template< template<class...> class L, class Predicate, class... T>
         requires any_typelist<L<T...>>
