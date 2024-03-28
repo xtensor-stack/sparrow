@@ -65,7 +65,8 @@ namespace sparrow
 
         TEST_CASE("value_iterator_ordering")
         {
-            layout_test_type lt(make_test_array_data());
+            array_data ad = make_test_array_data();
+            layout_test_type lt(ad);
             auto lt_values = lt.values();
             layout_test_type::value_iterator iter = lt_values.begin();
             // TODO: Allow coercion of iterator to const_iterator.
@@ -76,7 +77,8 @@ namespace sparrow
 
         TEST_CASE("value_iterator_equality")
         {
-            layout_test_type lt(make_test_array_data());
+            array_data ad = make_test_array_data();
+            layout_test_type lt(ad);
             auto lt_values = lt.values();
             layout_test_type::value_iterator iter = lt_values.begin();
             // TODO: Allow coercion of iterator to const_iterator.

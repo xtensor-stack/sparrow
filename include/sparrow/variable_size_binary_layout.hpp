@@ -14,7 +14,9 @@
 
 #pragma once
 
+#include <functional>
 #include <ranges>
+
 #include "sparrow/array_data.hpp"
 #include "sparrow/iterator.hpp"
 
@@ -156,8 +158,13 @@ namespace sparrow
         using const_bitmap_range = std::ranges::subrange<const_bitmap_iterator>;
         using const_value_range = std::ranges::subrange<const_value_iterator>;
 
-        explicit variable_size_binary_layout(array_data data);
+        explicit variable_size_binary_layout(array_data& data);
 
+        variable_size_binary_layout(const self_type&) = delete;
+        self_type& operator=(const self_type&) = delete;
+        variable_size_binary_layout(self_type&&) = delete;
+        self_type& operator=(self_type&&) = delete;
+        
         size_type size() const;
         const_reference operator[](size_type i) const;
 
@@ -179,7 +186,10 @@ namespace sparrow
         const_offset_iterator offset_end() const;
         const_data_iterator data(size_type i) const;
 
-        array_data m_data;
+        array_data& data_ref();
+        const array_data& data_ref() const;
+
+        std::reference_wrapper<array_data> m_data;
 
         friend class const_reference_proxy<self_type>;
         friend class vs_binary_value_iterator<self_type, true>;
@@ -246,19 +256,19 @@ namespace sparrow
      **********************************************/
 
     template <class T, class R, class CR, layout_offset OT>
-    variable_size_binary_layout<T, R, CR, OT>::variable_size_binary_layout(array_data data)
-        : m_data(std::move(data))
+    variable_size_binary_layout<T, R, CR, OT>::variable_size_binary_layout(array_data& data)
+        : m_data(data)
     {
-        assert(m_data.buffers.size() == 2u);
+        assert(data_ref().buffers.size() == 2u);
         //TODO: templatize back and front in buffer and uncomment the following line
-        //assert(m_data.buffers[0].size() == 0u || m_data.buffers[0].back() == m_data.buffers[1].size());
+        //assert(data_ref().buffers[0].size() == 0u || data_ref().buffers[0].back() == data_ref().buffers[1].size());
     }
 
     template <class T, class R, class CR, layout_offset OT>
     auto variable_size_binary_layout<T, R, CR, OT>::size() const -> size_type
     {
-        assert(m_data.offset <= m_data.length);
-        return static_cast<size_type>(m_data.length - m_data.offset);
+        assert(data_ref().offset <= data_ref().length);
+        return static_cast<size_type>(data_ref().length - data_ref().offset);
     }
 
     template <class T, class R, class CR, layout_offset OT>
@@ -283,13 +293,13 @@ namespace sparrow
     template <class T, class R, class CR, layout_offset OT>
     auto variable_size_binary_layout<T, R, CR, OT>::bitmap_cbegin() const -> const_bitmap_iterator
     {
-        return m_data.bitmap.cbegin() + m_data.offset;
+        return data_ref().bitmap.cbegin() + data_ref().offset;
     }
 
     template <class T, class R, class CR, layout_offset OT>
     auto variable_size_binary_layout<T, R, CR, OT>::bitmap_cend() const -> const_bitmap_iterator
     {
-        return m_data.bitmap.cend();
+        return data_ref().bitmap.cend();
     }
 
     template <class T, class R, class CR, layout_offset OT>
@@ -307,7 +317,7 @@ namespace sparrow
     template <class T, class R, class CR, layout_offset OT>
     auto variable_size_binary_layout<T, R, CR, OT>::has_value(size_type i) const -> bool
     {
-        return m_data.bitmap.test(i + m_data.offset);
+        return data_ref().bitmap.test(i + data_ref().offset);
     }
 
     template <class T, class R, class CR, layout_offset OT>
@@ -319,22 +329,34 @@ namespace sparrow
     template <class T, class R, class CR, layout_offset OT>
     auto variable_size_binary_layout<T, R, CR, OT>::offset(size_type i) const -> const_offset_iterator
     {
-        assert(!m_data.buffers.empty());
-        return m_data.buffers[0].template data<OT>() + m_data.offset + i;
+        assert(!data_ref().buffers.empty());
+        return data_ref().buffers[0].template data<OT>() + data_ref().offset + i;
     }
 
     template <class T, class R, class CR, layout_offset OT>
     auto variable_size_binary_layout<T, R, CR, OT>::offset_end() const -> const_offset_iterator
     {
-        assert(!m_data.buffers.empty());
-        return m_data.buffers[0].template data<OT>() + m_data.length;
+        assert(!data_ref().buffers.empty());
+        return data_ref().buffers[0].template data<OT>() + data_ref().length;
     }
 
     template <class T, class R, class CR, layout_offset OT>
     auto variable_size_binary_layout<T, R, CR, OT>::data(size_type i) const -> const_data_iterator
     {
-        assert(!m_data.buffers.empty());
-        return m_data.buffers[1].template data<data_type>() + i;
+        assert(!data_ref().buffers.empty());
+        return data_ref().buffers[1].template data<data_type>() + i;
+    }
+
+    template <class T, class R, class CR, layout_offset OT>
+    array_data& variable_size_binary_layout<T, R, CR, OT>::data_ref()
+    {
+        return m_data.get();
+    }
+
+    template <class T, class R, class CR, layout_offset OT>
+    const array_data& variable_size_binary_layout<T, R, CR, OT>::data_ref() const
+    {
+        return m_data.get();
     }
 }
 
