@@ -141,8 +141,6 @@ namespace sparrow
 
     private:
 
-        array_data* p_data;
-
         pointer data();
         const_pointer data() const;
 
@@ -163,6 +161,11 @@ namespace sparrow
         const_bitmap_iterator bitmap_cbegin() const;
         const_bitmap_iterator bitmap_cend() const;
 
+        array_data& data_ref();
+        const array_data& data_ref() const;
+
+        std::reference_wrapper<array_data> m_data;
+        
         friend class reference_proxy<fixed_size_layout>;
         friend class const_reference_proxy<fixed_size_layout>;
     };
@@ -225,32 +228,32 @@ namespace sparrow
 
     template <class T>
     fixed_size_layout<T>::fixed_size_layout(array_data& data)
-        : p_data(&data)
+        : m_data(data)
     {
         // We only require the presence of the bitmap and the first buffer.
-        assert(p_data->buffers.size() > 0);
-        assert(p_data->length == p_data->bitmap.size());
+        assert(data_ref().buffers.size() > 0);
+        assert(data_ref().length == data_ref().bitmap.size());
     }
 
     template <class T>
     auto fixed_size_layout<T>::size() const -> size_type
     {
-        assert(p_data->offset <= p_data->length);
-        return static_cast<size_type>(p_data->length - p_data->offset);
+        assert(data_ref().offset <= data_ref().length);
+        return static_cast<size_type>(data_ref().length - data_ref().offset);
     }
 
     template <class T>
     auto fixed_size_layout<T>::value(size_type i) -> inner_reference
     {
         assert(i < size());
-        return data()[i + p_data->offset];
+        return data()[i + data_ref().offset];
     }
 
     template <class T>
     auto fixed_size_layout<T>::value(size_type i) const -> inner_const_reference
     {
         assert(i < size());
-        return data()[i + p_data->offset];
+        return data()[i + data_ref().offset];
     }
 
     template <class T>
@@ -295,20 +298,20 @@ namespace sparrow
     auto fixed_size_layout<T>::has_value(size_type i) -> bitmap_reference
     {
         assert(i < size());
-        return p_data->bitmap[i + p_data->offset];
+        return data_ref().bitmap[i + data_ref().offset];
     }
 
     template <class T>
     auto fixed_size_layout<T>::has_value(size_type i) const -> bitmap_const_reference
     {
         assert(i < size());
-        return static_cast<const array_data*>(p_data)->bitmap[i + p_data->offset];
+        return data_ref().bitmap[i + data_ref().offset];
     }
 
     template <class T>
     auto fixed_size_layout<T>::value_begin() -> value_iterator
     {
-        return value_iterator{data() + p_data->offset};
+        return value_iterator{data() + data_ref().offset};
     }
 
     template <class T>
@@ -320,7 +323,7 @@ namespace sparrow
     template <class T>
     auto fixed_size_layout<T>::value_cbegin() const -> const_value_iterator
     {
-        return const_value_iterator{data() + p_data->offset};
+        return const_value_iterator{data() + data_ref().offset};
     }
 
     template <class T>
@@ -332,7 +335,7 @@ namespace sparrow
     template <class T>
     auto fixed_size_layout<T>::bitmap_begin() -> bitmap_iterator
     {
-        return p_data->bitmap.begin() + p_data->offset;
+        return data_ref().bitmap.begin() + data_ref().offset;
     }
 
     template <class T>
@@ -344,7 +347,7 @@ namespace sparrow
     template <class T>
     auto fixed_size_layout<T>::bitmap_cbegin() const -> const_bitmap_iterator
     {
-        return p_data->bitmap.cbegin() + p_data->offset;
+        return data_ref().bitmap.cbegin() + data_ref().offset;
     }
 
     template <class T>
@@ -356,15 +359,27 @@ namespace sparrow
     template <class T>
     auto fixed_size_layout<T>::data() -> pointer
     {
-        assert(p_data->buffers.size() > 0);
-        return p_data->buffers[0].template data<inner_value_type>();
+        assert(data_ref().buffers.size() > 0);
+        return data_ref().buffers[0].template data<inner_value_type>();
     }
 
     template <class T>
     auto fixed_size_layout<T>::data() const -> const_pointer
     {
-        assert(p_data->buffers.size() > 0);
-        return p_data->buffers[0].template data<inner_value_type>();
+        assert(data_ref().buffers.size() > 0);
+        return data_ref().buffers[0].template data<inner_value_type>();
+    }
+
+    template <class T>
+    array_data& fixed_size_layout<T>::data_ref()
+    {
+        return m_data.get();
+    }
+
+    template <class T>
+    const array_data& fixed_size_layout<T>::data_ref() const
+    {
+        return m_data.get();
     }
 
 } // namespace sparrow
