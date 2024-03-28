@@ -158,6 +158,11 @@ namespace sparrow
 
         explicit variable_size_binary_layout(array_data& data);
 
+        variable_size_binary_layout(const self_type&) = delete;
+        self_type& operator=(const self_type&) = delete;
+        variable_size_binary_layout(self_type&&) = delete;
+        self_type& operator=(self_type&&) = delete;
+        
         size_type size() const;
         const_reference operator[](size_type i) const;
 

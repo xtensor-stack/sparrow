@@ -122,6 +122,11 @@ namespace sparrow
         // using const_iterator = layout_iterator<self_type, true>;
 
         explicit fixed_size_layout(array_data& data);
+        
+        fixed_size_layout(const self_type&) = delete;
+        self_type& operator=(const self_type&) = delete;
+        fixed_size_layout(self_type&&) = delete;
+        self_type& operator=(self_type&&) = delete;
 
         size_type size() const;
 
