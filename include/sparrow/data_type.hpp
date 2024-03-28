@@ -130,7 +130,7 @@ namespace sparrow
     concept is_arrow_traits = mpl::is_type_instance_of_v< T, arrow_traits >
         and requires
         {
-            /// Must proivde a compile-time value of type `data_type`.
+            /// Must provide a compile-time value of type `data_type`.
             /// This is used to identify which arrow data type is represented in `value_type`
             requires std::same_as< std::remove_cvref_t<decltype(T::type_id)>, ::sparrow::data_type >;
 
