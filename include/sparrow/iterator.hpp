@@ -48,7 +48,7 @@ namespace sparrow
                 {
                 }
 
-                Reference* operator->() const
+                Reference* operator->()
                 {
                     return std::addressof(m_reference);
                 }

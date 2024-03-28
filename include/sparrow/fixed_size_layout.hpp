@@ -104,6 +104,7 @@ namespace sparrow
         using const_pointer = const inner_value_type*;
         using size_type = std::size_t;
         using difference_type = std::ptrdiff_t;
+        using iterator_tag = std::contiguous_iterator_tag;
 
         using const_bitmap_iterator = array_data::bitmap_type::const_iterator;
         using const_value_iterator = fixed_size_layout_value_iterator<T, true>;

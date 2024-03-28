@@ -197,6 +197,61 @@ namespace sparrow
     template <class L>
     void swap(reference_proxy<L>& lhs, reference_proxy<L>& rhs);
 
+    /*
+     * Layout iterator class
+     *
+     * Relies on a layout's couple of value iterator and bitmap iterator to
+     * return reference proxies when it is dereferenced.
+     */
+    template <class L, bool is_const>
+    class layout_iterator : public iterator_base
+    <
+        layout_iterator<L, is_const>,
+        mpl::constify_t<typename L::value_type, is_const>,
+        typename L::iterator_tag,
+        std::conditional_t<is_const, const_reference_proxy<L>, reference_proxy<L>>
+    >
+    {
+    public:
+
+        using self_type = layout_iterator<L, is_const>;
+        using base_type = iterator_base
+        <
+            self_type,
+            mpl::constify_t<typename L::value_type, is_const>,
+            typename L::iterator_tag,
+            std::conditional_t<is_const, const_reference_proxy<L>, reference_proxy<L>>
+        >;
+        using reference = typename base_type::reference;
+        using difference_type = typename base_type::difference_type;
+
+        using value_iterator = std::conditional_t<
+            is_const, typename L::const_value_iterator, typename L::value_iterator
+        >;
+
+        using bitmap_iterator = std::conditional_t<
+            is_const, typename L::const_bitmap_iterator, typename L::bitmap_iterator
+        >;
+
+        layout_iterator() noexcept = default;
+        layout_iterator(value_iterator value_iter, bitmap_iterator bitmap_iter);
+
+    private:
+
+        reference dereference() const;
+        void increment();
+        void decrement();
+        void advance(difference_type n);
+        difference_type distance_to(const self_type& rhs) const;
+        bool equal(const self_type& rhs) const;
+        bool less_than(const self_type& rhs) const;
+
+        value_iterator m_value_iter;
+        bitmap_iterator m_bitmap_iter;
+
+        friend class iterator_access;
+    };
+
     /***************************************
      * reference_proxy_base implementation *
      ***************************************/
@@ -425,4 +480,64 @@ namespace sparrow
     {
         lhs.swap(rhs);
     }
+
+    /**********************************
+     * layout_iterator implementation *
+     **********************************/
+
+    template <class L, bool is_const>
+    layout_iterator<L, is_const>::layout_iterator(
+        value_iterator value_iter,
+        bitmap_iterator bitmap_iter
+    )
+        : m_value_iter(value_iter)
+        , m_bitmap_iter(bitmap_iter)
+    {
+    }
+
+    template <class L, bool is_const>
+    auto layout_iterator<L, is_const>::dereference() const -> reference
+    {
+        return reference(*m_value_iter, *m_bitmap_iter);
+    }
+
+    template <class L, bool is_const>
+    void layout_iterator<L, is_const>::increment()
+    {
+        ++m_value_iter;
+        ++m_bitmap_iter;
+    }
+
+    template <class L, bool is_const>
+    void layout_iterator<L, is_const>::decrement()
+    {
+        --m_value_iter;
+        --m_bitmap_iter;
+    }
+
+    template <class L, bool is_const>
+    void layout_iterator<L, is_const>::advance(difference_type n)
+    {
+        m_value_iter += n;
+        m_bitmap_iter += n;
+    }
+
+    template <class L, bool is_const>
+    auto layout_iterator<L, is_const>::distance_to(const self_type& rhs) const -> difference_type
+    {
+        return rhs.m_value_iter - m_value_iter;
+    }
+
+    template <class L, bool is_const>
+    bool layout_iterator<L, is_const>::equal(const self_type& rhs) const
+    {
+        return m_value_iter == rhs.m_value_iter && m_bitmap_iter == rhs.m_bitmap_iter;
+    }
+
+    template <class L, bool is_const>
+    bool layout_iterator<L, is_const>::less_than(const self_type& rhs) const
+    {
+        return m_value_iter < rhs.m_value_iter && m_bitmap_iter < rhs.m_bitmap_iter;
+    }
 }
+

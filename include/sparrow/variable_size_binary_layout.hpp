@@ -138,6 +138,7 @@ namespace sparrow
         using value_type = std::optional<inner_value_type>;
         using const_reference = const_reference_proxy<self_type>;
         using size_type = std::size_t;
+        using iterator_tag = std::contiguous_iterator_tag;
 
         /**
          * These types have to be public to be accessible when
@@ -150,8 +151,18 @@ namespace sparrow
         using data_iterator = data_type*;
         using const_data_iterator = const data_type*;
         
-        using const_bitmap_iterator = array_data::bitmap_type::const_iterator;
         using const_value_iterator = vs_binary_value_iterator<self_type, true>;
+        using const_bitmap_iterator = array_data::bitmap_type::const_iterator;
+        using const_iterator = layout_iterator<self_type, true>;
+
+        // TODO: required by layout_iterator, replace them with the right types
+        // when assignment for data in a variable size bienary layout is implemented
+        // and implement non const overloads of `values` and `bitmap`
+        using value_iterator = const_value_iterator;
+        using bitmap_iterator = const_bitmap_iterator;
+        // TODO: uncomment the following line and implement the non const overloads
+        // of `begin` and `end`
+        // using iterator = layout_iterator<self_type, false>;
 
         using const_bitmap_range = std::ranges::subrange<const_bitmap_iterator>;
         using const_value_range = std::ranges::subrange<const_value_iterator>;
@@ -161,8 +172,11 @@ namespace sparrow
         size_type size() const;
         const_reference operator[](size_type i) const;
 
-        const_bitmap_range bitmap() const;
+        const_iterator cbegin() const;
+        const_iterator cend() const;
+
         const_value_range values() const;
+        const_bitmap_range bitmap() const;
 
     private:
 
@@ -266,6 +280,18 @@ namespace sparrow
     {
         assert(i < size());
         return const_reference(value(i), has_value(i));
+    }
+    
+    template <class T, class R, class CR, layout_offset OT>
+    auto variable_size_binary_layout<T, R, CR, OT>::cbegin() const -> const_iterator
+    {
+        return const_iterator(value_cbegin(), bitmap_cbegin());
+    }
+
+    template <class T, class R, class CR, layout_offset OT>
+    auto variable_size_binary_layout<T, R, CR, OT>::cend() const -> const_iterator
+    {
+        return const_iterator(value_cend(), bitmap_cend());
     }
     
     template <class T, class R, class CR, layout_offset OT>

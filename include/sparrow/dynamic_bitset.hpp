@@ -257,16 +257,7 @@ namespace sparrow
     >
     {
     public:
-
-        using block_type = mpl::constify_t<typename B::block_type, is_const>;
-        using bitset_type = mpl::constify_t<B, is_const>;
-        using size_type = typename B::size_type;
-
-        bitset_iterator() noexcept = default;
-        bitset_iterator(bitset_type* bitset, block_type* block, size_type index);
-
-    private:
-
+        
         using self_type = bitset_iterator<B, is_const>;
         using base_type = iterator_base
         <
@@ -277,6 +268,15 @@ namespace sparrow
         >;        
         using reference = typename base_type::reference;
         using difference_type = typename base_type::difference_type;
+
+        using block_type = mpl::constify_t<typename B::block_type, is_const>;
+        using bitset_type = mpl::constify_t<B, is_const>;
+        using size_type = typename B::size_type;
+
+        bitset_iterator() noexcept = default;
+        bitset_iterator(bitset_type* bitset, block_type* block, size_type index);
+
+    private:
 
         reference dereference() const;
         void increment();

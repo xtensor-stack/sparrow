@@ -127,5 +127,28 @@ namespace sparrow
             iter += 2;
             CHECK_EQ(iter, brange.end());
         }
+
+        TEST_CASE_FIXTURE(vs_binary_fixture, "const_iterator")
+        {
+            layout_type l(m_data);
+            auto cref0 = l[0];
+            auto cref1 = l[1];
+            auto cref2 = l[2];
+
+            auto iter = l.cbegin();
+            CHECK_EQ(*iter, std::make_optional(cref0.value()));
+
+            ++iter;
+            CHECK(!iter->has_value());
+
+            ++iter;
+            CHECK_EQ(iter->value(), cref2.value());
+
+            iter++;
+            CHECK_EQ(iter, l.cend());
+
+            iter -= 3;
+            CHECK_EQ(iter, l.cbegin());
+        }
     }
 }
