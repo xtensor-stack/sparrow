@@ -53,6 +53,15 @@ namespace sparrow
                                     && (std::same_as<A, std::allocator<T>>
                                         || std::same_as<A, std::pmr::polymorphic_allocator<T>>);
 
+    template <class... Ts>
+    struct overloaded : Ts...
+    {
+        using Ts::operator()...;
+    };
+    // Although not required in C++20, clang needs it to build the code below
+    template <class... Ts>
+    overloaded(Ts...) -> overloaded<Ts...>;
+
     /*
      * Type erasure class for allocators. This allows to use any kind of allocator
      * (standard, polymorphic) without having to expose it as a template parameter.
@@ -149,15 +158,6 @@ namespace sparrow
             return std::forward<A>(alloc);
         }
 
-        template <class... Ts>
-        struct overloaded : Ts...
-        {
-            using Ts::operator()...;
-        };
-        // Although not required in C++20, clang needs it to build the code below
-        template <class... Ts>
-        overloaded(Ts...) -> overloaded<Ts...>;
-
         storage_type copy_storage(const storage_type& rhs) const
         {
             return std::visit(
@@ -226,18 +226,28 @@ namespace sparrow
     }
 
     template <class T>
-    void any_allocator<T>::deallocate(T* p, std::size_t n)
+#if defined(_MSC_VER) && !defined(__clang__)  // MSVC
+    __declspec(no_sanitize_address)
+#else
+#    if defined(__has_feature)
+#        if __has_feature(address_sanitizer)
+    __attribute__((no_sanitize("address")))
+#        endif
+#    endif
+#endif
+    void
+    any_allocator<T>::deallocate(T* p, std::size_t n)
     {
         return visit_storage(
             [n, p](auto& allocator)
             {
 #if defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmismatched-new-delete"
+#    pragma GCC diagnostic push
+#    pragma GCC diagnostic ignored "-Wmismatched-new-delete"
 #endif
                 return allocator.deallocate(p, n);
 #if defined(__GNUC__)
-#pragma GCC diagnostic pop
+#    pragma GCC diagnostic pop
 #endif
             }
         );

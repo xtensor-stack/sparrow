@@ -19,6 +19,7 @@ cmake_minimum_required(VERSION 3.27)
 # so here we go.
 # This will affects all following targets being defined.
 set(CMAKE_CXX_EXTENSIONS OFF)
+cmake_policy(SET CMP0091 NEW)
 
 project(sparrow CXX)
 
@@ -72,6 +73,10 @@ if(ACTIVATE_LINTER)
     include(cmake/clang-format.cmake)
     include(cmake/clang-tidy.cmake)
 endif()
+
+# Sanitizers
+# ==========
+include(cmake/sanitizers.cmake)
 
 # Dependencies
 # ============

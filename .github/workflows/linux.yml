@@ -1,3 +1,4 @@
+
 name: Linux
 on:
   workflow_dispatch:
@@ -42,10 +43,10 @@ jobs:
 
     - name: Install LLVM and Clang
       if: matrix.sys.compiler == 'clang'
-      uses: egor-tensin/setup-clang@v1
+      uses: KyleMayes/install-llvm-action@v2
       with:
         version: ${{matrix.sys.version}}
-        platform: x64
+        arch: x64
 
     - name: Install the specified standard library for clang
       if: matrix.sys.compiler == 'clang'
@@ -63,7 +64,7 @@ jobs:
         cache-downloads: true
 
     - name: Configure using CMake
-      run: cmake -G Ninja -Bbuild ${{matrix.sys.config-flags}} -DCMAKE_BUILD_TYPE:STRING=${{matrix.config.name}} -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX -DUSE_DATE_POLYFILL=${{matrix.sys.date-polyfill}} -DBUILD_TESTS=ON
+      run: cmake -G Ninja -Bbuild ${{matrix.sys.config-flags}} -DCMAKE_BUILD_TYPE:STRING=${{matrix.config.name}} -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX -DUSE_DATE_POLYFILL=${{matrix.sys.date-polyfill}} -DBUILD_TESTS=ON -DUSE_SANITIZER="address;undefined;leak"
 
     - name: Install
       working-directory: build
@@ -76,6 +77,9 @@ jobs:
     - name: Run tests
       working-directory: build
       run: cmake --build . --config ${{matrix.config.name}} --target run_tests_with_junit_report
+      env:
+        ASAN_OPTIONS: log_path=${{github.workspace}}/asan.log:alloc_dealloc_mismatch=0:halt_on_error=0:handle_abort=0:exitcode=0
+        # UBSAN_OPTIONS: log_path=${{github.workspace}}/ubsan.log:halt_on_error=0:handle_abort=1:exitcode=0
 
     - name: Upload test results
       uses: actions/upload-artifact@v4
@@ -83,3 +87,10 @@ jobs:
       with:
         name: test_sparrow_lib_report_Linux_${{ matrix.sys.compiler }}_${{ matrix.sys.version }}_${{ matrix.sys.stdlib }}_${{ matrix.config.name }}_date-polyfill_${{ matrix.sys.date-polyfill}}
         path: '**/test_sparrow_lib_report.xml'
+
+    - name: Upload ASAN log
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: asan-log-${{ matrix.sys.compiler }}-${{ matrix.sys.version }}-${{ matrix.config.name }}-${{ matrix.sys.date-polyfill }}
+        path: ${{github.workspace}}/asan.log

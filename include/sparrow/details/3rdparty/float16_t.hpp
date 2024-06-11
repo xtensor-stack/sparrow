@@ -177,7 +177,7 @@ namespace half
         const std::uint32_t f_m_rounded = ( f_m + f_m_round_offset );
         const std::uint32_t f_m_denorm_sa = ( one - f_e_half_bias );
         const std::uint32_t f_m_with_hidden = ( f_m_rounded | f_m_hidden_bit );
-        const std::uint32_t f_m_denorm = ( f_m_with_hidden >> f_m_denorm_sa );
+        const std::uint32_t f_m_denorm = f_m_denorm_sa < 32 ? ( f_m_with_hidden >> f_m_denorm_sa ) : 0;
         const std::uint32_t h_m_denorm = ( f_m_denorm >> f_h_m_pos_offset );
         const std::uint32_t f_m_rounded_overflow = ( f_m_rounded & f_m_hidden_bit );
         const std::uint32_t m_nan = ( f_m >> f_h_m_pos_offset );

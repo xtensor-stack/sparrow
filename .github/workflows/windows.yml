@@ -33,7 +33,7 @@ jobs:
     steps:
 
     - name: Setup MSVC
-      if: matrix.sys.compiler == 'msvc' && matrix.build-system != 'Visual Studio 17 2022'
+      if: matrix.sys.compiler == 'msvc'
       uses: ilammy/msvc-dev-cmd@v1
 
     - name: Install LLVM and Clang
@@ -63,7 +63,9 @@ jobs:
           ninja
 
     - name: Configure using CMake
-      run: cmake -Bbuild -DCMAKE_BUILD_TYPE:STRING=${{matrix.config.name}} -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX -DBUILD_TESTS=ON -DUSE_DATE_POLYFILL=${{matrix.sys.date-polyfill}} -G "${{matrix.build-system}}"
+      run: cmake -Bbuild -DCMAKE_BUILD_TYPE:STRING=${{matrix.config.name}} -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX -DBUILD_TESTS=ON -DUSE_DATE_POLYFILL=${{matrix.sys.date-polyfill}} -G "${{matrix.build-system}}" ${{env.CMAKE_SANITIZER}}
+      env:
+        CMAKE_SANITIZER: ${{ (matrix.config.name == 'Debug' && matrix.sys.compiler == 'msvc') && '-DUSE_SANITIZER=address' || '' }}
 
     - name: Install
       working-directory: build

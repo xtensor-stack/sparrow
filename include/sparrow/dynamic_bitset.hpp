@@ -536,7 +536,7 @@ namespace sparrow
             const size_type extra_bits = count_extra_bits();
             if (extra_bits > 0)
             {
-                m_buffer.data()[old_block_count - 1] |= (value << extra_bits);
+                m_buffer.data()[old_block_count - 1] |= static_cast<block_type>(value << extra_bits);
             }
         }
 
