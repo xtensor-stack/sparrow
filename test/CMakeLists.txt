@@ -54,11 +54,17 @@ set(SPARROW_TESTS_SOURCES
     test_typed_array.cpp
     test_typed_array_timestamp.cpp
     test_variable_size_binary_layout.cpp
+    better_junit_reporter.hpp
+    junit.hpp
+    junit.cpp
+    junit_xml_writer.hpp
 )
 set(test_target "test_sparrow_lib")
 add_executable(${test_target} ${SPARROW_TESTS_SOURCES})
 target_link_libraries(${test_target} PRIVATE sparrow doctest::doctest)
-add_test(NAME ${test_target} COMMAND ${test_target})
+
+include(doctest)
+doctest_discover_tests(${test_target})
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set(compiles_options
@@ -110,7 +116,9 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "C
         $<$<CXX_COMPILER_ID:GNU>:-Wduplicated-branches> # warn if if / else branches have duplicated code
         $<$<CXX_COMPILER_ID:GNU>:-Wduplicated-cond> # warn if if / else chain has duplicated conditions
         $<$<CXX_COMPILER_ID:GNU>:-Wlogical-op> # warn about logical operations being used where bitwise were probably wanted
-        $<$<CXX_COMPILER_ID:GNU>:-Wuseless-cast>) # warn if you perform a cast to the same type
+        $<$<CXX_COMPILER_ID:GNU>:-Wno-subobject-linkage> # suppress warnings about subobject linkage
+        $<$<CXX_COMPILER_ID:GNU>:-Wuseless-cast> # warn if you perform a cast to the same type
+    ) 
 endif()
 
 target_compile_options(${test_target} PRIVATE ${compiles_options})
@@ -118,3 +126,24 @@ target_compile_options(${test_target} PRIVATE ${compiles_options})
 # We do not use non-standard C++
 set_target_properties(${test_target} PROPERTIES CMAKE_CXX_EXTENSIONS OFF)
 target_compile_features(${test_target} PRIVATE cxx_std_20)
+
+add_custom_target(run_tests
+    COMMAND ${test_target}
+    DEPENDS ${test_target}
+    COMMENT "Running tests"
+    USES_TERMINAL
+)
+
+set_target_properties(run_tests PROPERTIES FOLDER "Tests utilities")
+
+set(JUNIT_REPORT_FILE ${CMAKE_CURRENT_BINARY_DIR}/test_sparrow_lib_report.xml)
+
+add_custom_target(run_tests_with_junit_report
+    COMMAND ${test_target} --reporters=better_junit --out=${JUNIT_REPORT_FILE} --no-path-filenames=true
+    DEPENDS ${test_target}
+    COMMENT "Running tests with JUnit report saved to: ${JUNIT_REPORT_FILE}"
+    USES_TERMINAL
+)
+
+set_target_properties(run_tests_with_junit_report PROPERTIES FOLDER "Tests utilities")
+

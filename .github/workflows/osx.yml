@@ -30,7 +30,7 @@ jobs:
     steps:
 
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Add specification of clang++ in the conda environment specification
       if: matrix.compiler == 'clang'
@@ -70,4 +70,12 @@ jobs:
 
     - name: Run tests
       working-directory: build
-      run: ctest -C ${{matrix.config.name}} --output-on-failure
+      run: cmake --build . --config ${{matrix.config.name}} --target run_tests_with_junit_report
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: success() || failure()
+      with:
+        name: test_sparrow_lib_report_OSX_${{ matrix.os }}_${{ matrix.config.name }}_${{ matrix.compiler }}
+        path: '**/test_sparrow_lib_report.xml'
+
