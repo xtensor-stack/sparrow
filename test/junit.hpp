@@ -64,6 +64,12 @@ namespace sparrow
 
     struct JUnitTestSuite
     {
+        JUnitTestSuite(std::string name, std::string timestamp)
+            : m_name(std::move(name))
+            , m_timestamp(std::move(timestamp))
+        {
+        }
+
         std::string m_name;
         std::string m_timestamp;  // ISO 8601 format
         std::string m_filename;
