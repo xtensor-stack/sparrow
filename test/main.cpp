@@ -17,7 +17,7 @@
 
 #include <sparrow/sparrow_version.hpp>
 
-#include "doctest/doctest.h"
+#include "better_junit_reporter.hpp"
 
 TEST_CASE("version is readable")
 {
