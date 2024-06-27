@@ -35,9 +35,7 @@ namespace sparrow
         {
             array_data::bitmap_type bitmap{words.size(), true};
             //bitmap.set(4, false);
-            // Why using 2 here?
             //bitmap.set(0, false); // 0
-            // TODO QUESTION: why are we using offset 1 here?
             // m_data = make_default_array_data<layout_type>(words, bitmap, 1);
             m_data = make_default_array_data<layout_type>(words, bitmap, 0);
         }
@@ -81,39 +79,46 @@ namespace sparrow
         TEST_CASE_FIXTURE(vs_binary_fixture, "size")
         {
             layout_type l(m_data);
-            std::cout << "l size: " << l.size() << std::endl;
-            std::cout << "m_data.length: " << m_data.length << std::endl;
-            std::cout << "m_data.offset: " << m_data.offset << std::endl;
             CHECK_EQ(l.size(), m_data.length - m_data.offset);
         }
 
         TEST_CASE_FIXTURE(vs_binary_fixture, "operator[]")
         {
             layout_type l(m_data);
-            // size: 3 // length:  4 // offset: 1
-            std::cout << "l size: " << l.size() << std::endl;
-            std::cout << "m_data.length: " << m_data.length << std::endl;
-            std::cout << "m_data.offset: " << m_data.offset << std::endl;
+
             auto cref0 = l[0];
             auto cref1 = l[1];
             auto cref2 = l[2];
             auto cref3 = l[3];
 
             CHECK(cref0.has_value());
-//             CHECK_EQ(cref0.value(), words[0]);
-//             CHECK(cref1.has_value());
-//             CHECK_EQ(cref1.value(), words[1]);
-//             CHECK(cref2.has_value());
-//             CHECK_EQ(cref2.value(), words[2]);
-//             CHECK(cref3.has_value());
-//             CHECK_EQ(cref3.value(), words[3]);
-//             
-//             l[1] = "is";
-//             
+
+            CHECK_EQ(cref0.value(), words[0]);
+            CHECK(cref1.has_value());
+            CHECK_EQ(cref1.value(), words[1]);
+            CHECK(cref2.has_value());
+            CHECK_EQ(cref2.value(), words[2]);
+            CHECK(cref3.has_value());
+            CHECK_EQ(cref3.value(), words[3]);
+
+            cref0.value() = "they";
+            CHECK_EQ(cref0.value(), std::string("they"));
+            CHECK_EQ(cref1.value(), words[1]);
+            CHECK_EQ(cref2.value(), words[2]);
+            CHECK_EQ(cref3.value(), words[3]);
+
+            cref0.value() = "is";
+            CHECK_EQ(cref0.value(), std::string("is"));
+            CHECK_EQ(cref1.value(), words[1]);
+            CHECK_EQ(cref2.value(), words[2]);
+            CHECK_EQ(cref3.value(), words[3]);
+
+            
+            
 //             CHECK_EQ(cref0.value(), words[1]);
 //             CHECK(!cref1.has_value());
 //             CHECK_EQ(cref2.value(), words[3]);
-//         }
+        }
 // 
 //         TEST_CASE_FIXTURE(vs_binary_fixture, "const_value_iterator")
 //         {

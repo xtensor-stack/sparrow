@@ -165,8 +165,8 @@ namespace sparrow
         bool has_value() const;
         explicit operator bool() const;
 
-        reference& value();
-        const_reference & value() const;
+        reference value();
+        const_reference value() const;
 
         self_type& operator=(const self_type& rhs);
         self_type& operator=(self_type&& rhs);
@@ -367,14 +367,14 @@ namespace sparrow
     }
 
     template <class L>
-    auto reference_proxy<L>::value() -> reference&
+    auto reference_proxy<L>::value() -> reference
     {
         SPARROW_ASSERT_TRUE(has_value());
         return m_val_ref;
     }
 
     template <class L>
-    auto reference_proxy<L>::value() const -> const_reference&
+    auto reference_proxy<L>::value() const -> const_reference
     {
         SPARROW_ASSERT_TRUE(has_value());
         return m_val_ref;
