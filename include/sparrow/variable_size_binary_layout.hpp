@@ -77,8 +77,6 @@ namespace sparrow
      *
      * @brief Implementation of reference to inner type
      * used for layout L
-     * TODO add comment in PR (will be used by other layouts?)
-     *      if so rename?
      *
      * @tparam L the layout type
      */
@@ -109,7 +107,7 @@ namespace sparrow
         L* p_layout = nullptr;
         size_type m_index;
     };
-    
+
     /*
      * @class variable_size_binary_layout
      *
@@ -197,7 +195,7 @@ namespace sparrow
 
         iterator begin();
         iterator end();
-        
+
         const_iterator cbegin() const;
         const_iterator cend() const;
 

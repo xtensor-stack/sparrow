@@ -34,10 +34,8 @@ namespace sparrow
         vs_binary_fixture()
         {
             array_data::bitmap_type bitmap{words.size(), true};
-            //bitmap.set(4, false);
-            //bitmap.set(0, false); // 0
-            // m_data = make_default_array_data<layout_type>(words, bitmap, 1);
-            m_data = make_default_array_data<layout_type>(words, bitmap, 0);
+            bitmap.set(2, false);
+            m_data = make_default_array_data<layout_type>(words, bitmap, 1);
         }
 
         static constexpr std::array<std::string_view, 4> words = {"you", "are", "not", "prepared"};
@@ -45,13 +43,11 @@ namespace sparrow
 
     private:
 
-        // TODO add comment in PR:
-        // this isn't used at the moment, are we supposed to use it later or should we remove it to avoid polluting the file?
-//         std::int64_t* offset()
-//         {
-//             SPARROW_ASSERT_FALSE(m_data.buffers.empty());
-//             return m_data.buffers[0].data<std::int64_t>();
-//         }
+        std::int64_t* offset()
+        {
+            SPARROW_ASSERT_FALSE(m_data.buffers.empty());
+            return m_data.buffers[0].data<std::int64_t>();
+        }
 
         static_assert(std::same_as<layout_type::inner_value_type, std::string>);
         static_assert(std::same_as<layout_type::inner_reference, sparrow::vs_binary_reference<layout_type>>);
@@ -86,70 +82,72 @@ namespace sparrow
         {
             layout_type l(m_data);
 
+//             auto cref0 = l[0];
+//             auto cref1 = l[1];
+//             auto cref2 = l[2];
+//             auto cref3 = l[3];
+
+//             CHECK(cref0.has_value());
+// 
+//             CHECK_EQ(cref0.value(), words[0]);
+//             CHECK(cref1.has_value());
+//             CHECK_EQ(cref1.value(), words[1]);
+//             CHECK(cref2.has_value());
+//             CHECK_EQ(cref2.value(), words[2]);
+//             CHECK(cref3.has_value());
+//             CHECK_EQ(cref3.value(), words[3]);
+// 
+//             cref0.value() = "they";
+//             CHECK_EQ(cref0.value(), std::string("they"));
+//             CHECK_EQ(cref1.value(), words[1]);
+//             CHECK_EQ(cref2.value(), words[2]);
+//             CHECK_EQ(cref3.value(), words[3]);
+// 
+//             cref0.value() = "is";
+//             CHECK_EQ(cref0.value(), std::string("is"));
+//             CHECK_EQ(cref1.value(), words[1]);
+//             CHECK_EQ(cref2.value(), words[2]);
+//             CHECK_EQ(cref3.value(), words[3]);
+
             auto cref0 = l[0];
             auto cref1 = l[1];
             auto cref2 = l[2];
-            auto cref3 = l[3];
 
-            CHECK(cref0.has_value());
-
-            CHECK_EQ(cref0.value(), words[0]);
-            CHECK(cref1.has_value());
-            CHECK_EQ(cref1.value(), words[1]);
-            CHECK(cref2.has_value());
-            CHECK_EQ(cref2.value(), words[2]);
-            CHECK(cref3.has_value());
-            CHECK_EQ(cref3.value(), words[3]);
-
-            cref0.value() = "they";
-            CHECK_EQ(cref0.value(), std::string("they"));
-            CHECK_EQ(cref1.value(), words[1]);
-            CHECK_EQ(cref2.value(), words[2]);
-            CHECK_EQ(cref3.value(), words[3]);
-
-            cref0.value() = "is";
-            CHECK_EQ(cref0.value(), std::string("is"));
-            CHECK_EQ(cref1.value(), words[1]);
-            CHECK_EQ(cref2.value(), words[2]);
-            CHECK_EQ(cref3.value(), words[3]);
-
-            
-            
-//             CHECK_EQ(cref0.value(), words[1]);
-//             CHECK(!cref1.has_value());
-//             CHECK_EQ(cref2.value(), words[3]);
+            CHECK_EQ(cref0.value(), words[1]);
+            CHECK(!cref1.has_value());
+            CHECK_EQ(cref2.value(), words[3]);
         }
-// 
-//         TEST_CASE_FIXTURE(vs_binary_fixture, "const_value_iterator")
-//         {
-//             layout_type l(m_data);
-//             auto cref0 = l[0];
-//             auto cref2 = l[2];
-// 
-//             auto vrange = l.values();
-//             auto iter = vrange.begin();
-//             CHECK_EQ(*iter, cref0.value());
-//             ++iter;
-//             --iter;
-//             CHECK_EQ(*iter, cref0.value());
-//             iter += 2;
-//             CHECK_EQ(*iter, cref2.value());
-//             ++iter;
-//             CHECK_EQ(iter, vrange.end());
-//         }
-// 
-//         TEST_CASE_FIXTURE(vs_binary_fixture, "const_bitmap_iterator")
-//         {
-//             layout_type l(m_data);
-//             auto brange = l.bitmap();
-//             auto iter = brange.begin();
-//             CHECK(*iter);
-//             ++iter;
-//             CHECK(!*iter);
-//             iter += 2;
-//             CHECK_EQ(iter, brange.end());
-//         }
-// 
+
+        TEST_CASE_FIXTURE(vs_binary_fixture, "const_value_iterator")
+        {
+            layout_type l(m_data);
+            auto cref0 = l[0];
+            auto cref2 = l[2];
+
+            auto vrange = l.values();
+            auto iter = vrange.begin();
+            CHECK_EQ(*iter, cref0.value());
+            ++iter;
+            --iter;
+            CHECK_EQ(*iter, cref0.value());
+            iter += 2;
+            CHECK_EQ(*iter, cref2.value());
+            ++iter;
+            CHECK_EQ(iter, vrange.end());
+        }
+
+        TEST_CASE_FIXTURE(vs_binary_fixture, "const_bitmap_iterator")
+        {
+            layout_type l(m_data);
+            auto brange = l.bitmap();
+            auto iter = brange.begin();
+            CHECK(*iter);
+            ++iter;
+            CHECK(!*iter);
+            iter += 2;
+            CHECK_EQ(iter, brange.end());
+        }
+
 //         TEST_CASE_FIXTURE(vs_binary_fixture, "const_iterator")
 //         {
 //             layout_type l(m_data);
