@@ -348,19 +348,7 @@ namespace sparrow
     {
         buffer_type& offset_buffer = p_layout->data_ref().buffers[0];
         buffer_type& data_buffer = p_layout->data_ref().buffers[1];
-        
-        std::string str_complete(data_buffer.begin(), data_buffer.end());
-        std::cout << "data_buffer: " << str_complete <<  std::endl;
-        
-        std::string str(rhs.begin(), rhs.end());
-        std::cout << "rhs: " << str <<  std::endl;
-        std::cout << "m_index: " << offset_buffer.template data<offset_type>()[m_index] << " and " << offset_buffer.template data<offset_type>()[m_index+1]  <<  std::endl;
 
-        std::string str_zero(data_buffer.begin()+ offset_buffer.template data<offset_type>()[m_index], data_buffer.begin() + offset_buffer.template data<offset_type>()[m_index + 1]);
-        std::cout << "data buff to compare: " << str_zero <<  std::endl;
-        //auto pos = m_index;// + static_cast<size_type>(p_layout->data_ref().offset);
-        // TODO Check that we don't exceed memory here (is it done somewhere else in bottom layers?)
-        // m_index + 1 >= p_layout->size()
         return std::equal(rhs.cbegin(), rhs.cend(), data_buffer.cbegin() + offset_buffer.template data<offset_type>()[m_index], data_buffer.cbegin() + offset_buffer.template data<offset_type>()[m_index + 1]);
     }
 
