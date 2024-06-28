@@ -85,7 +85,7 @@ namespace sparrow
         static constexpr std::array<std::string_view, 5> words{{"you", "are", "not", "prepared", "null"}};
 
         array_data m_data;
-        using sub_layout_type = variable_size_binary_layout<std::string, std::string_view, std::string_view>;
+        using sub_layout_type = variable_size_binary_layout<std::string, std::string_view>;
         using layout_type = dictionary_encoded_layout<data_type_t, sub_layout_type>;
     };
 
