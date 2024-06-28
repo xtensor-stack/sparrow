@@ -29,6 +29,7 @@ namespace sparrow
         using inner_value_type = value_type::value_type;
         using inner_reference = int&;
         using inner_const_reference = const int&;
+        using const_inner_reference = const int&;
         using bitmap_type = array_data::bitmap_type;
         using bitmap_reference = typename bitmap_type::reference;
         using bitmap_const_reference = typename bitmap_type::const_reference;

@@ -109,6 +109,7 @@ namespace sparrow
         using sub_layout = SL;
         using inner_reference = reference_proxy<SL>;
         using inner_const_reference = const_reference_proxy<SL>;
+        using const_inner_reference = const_reference_proxy<SL>;
         using bitmap_type = array_data::bitmap_type;
         using bitmap_const_reference = bitmap_type::const_reference;
         using value_type = SL::value_type;

@@ -152,7 +152,7 @@ namespace sparrow
         using layout_type = L;
         using value_type = typename L::inner_value_type;
         using reference = typename L::inner_reference;
-        using const_reference = typename L::inner_const_reference;
+        using const_reference = typename L::const_inner_reference;
         using bitmap_reference = typename L::bitmap_reference;
         using size_type = typename L::size_type;
 
