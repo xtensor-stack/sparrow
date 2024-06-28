@@ -182,21 +182,34 @@ namespace sparrow
             CHECK(cref3.has_value());
             CHECK_EQ(cref3.value(), words[3]);
 
-            cref3.value() = "unpreparedandmore";
+            SUBCASE("inner_reference")
+            {
+                cref3.value() = "unpreparedandmore";
 
-            CHECK_EQ(cref0.value(), words[0]);
-            CHECK_EQ(cref1.value(), words[1]);
-            CHECK_EQ(cref2.value(), words[2]);
-            CHECK_EQ(cref3.value(), std::string("unpreparedandmore"));
+                CHECK_EQ(cref0.value(), words[0]);
+                CHECK_EQ(cref1.value(), words[1]);
+                CHECK_EQ(cref2.value(), words[2]);
+                CHECK_EQ(cref3.value(), std::string("unpreparedandmore"));
 
-            cref0.value() = "he";
-            cref1.value() = "is";
-            cref2.value() = "";
+                cref0.value() = "he";
+                cref1.value() = "is";
+                cref2.value() = "";
 
-            CHECK_EQ(cref0.value(), std::string("he"));
-            CHECK_EQ(cref1.value(), std::string("is"));
-            CHECK_EQ(cref2.value(), std::string(""));
-            CHECK_EQ(cref3.value(), std::string("unpreparedandmore"));
+                CHECK_EQ(cref0.value(), std::string("he"));
+                CHECK_EQ(cref1.value(), std::string("is"));
+                CHECK_EQ(cref2.value(), std::string(""));
+                CHECK_EQ(cref3.value(), std::string("unpreparedandmore"));
+            }
+
+            SUBCASE("operator==with_self_type")
+            {
+                vs_binary_reference<layout_type> vs_ref0(&l, 0);
+                CHECK_EQ(cref0.value(), vs_ref0);
+
+                vs_binary_reference<layout_type> vs_ref3(&l, 3);
+                CHECK_EQ(cref3.value(), vs_ref3);
+            }
+            // TODO add tests for the different overloads of operator = and ==
         }
     }
 }

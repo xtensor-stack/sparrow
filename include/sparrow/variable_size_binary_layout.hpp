@@ -102,6 +102,8 @@ namespace sparrow
         template <class N = std::string>
         bool operator==(const N& rhs) const;
 
+        bool operator==(const self_type& rhs) const;
+
     private:
 
         L* p_layout = nullptr;
@@ -344,10 +346,37 @@ namespace sparrow
     template <class N>
     bool vs_binary_reference<L>::operator==(const N& rhs) const
     {
-        buffer_type& offset_buffer = p_layout->data_ref().buffers[0];
-        buffer_type& data_buffer = p_layout->data_ref().buffers[1];
+        const buffer_type& offset_buffer = p_layout->data_ref().buffers[0];
+        const buffer_type& data_buffer = p_layout->data_ref().buffers[1];
 
         return std::equal(rhs.cbegin(), rhs.cend(), data_buffer.cbegin() + offset_buffer.template data<offset_type>()[m_index], data_buffer.cbegin() + offset_buffer.template data<offset_type>()[m_index + 1]);
+    }
+
+    // TODO
+    // Add overloads for:
+    // L::inner_value_type, L::inner_const_reference
+    // TODO Add corresponding prototypes
+
+    template <class L>
+    bool vs_binary_reference<L>::operator==(const self_type& rhs) const
+    {
+        const buffer_type& offset_buffer = p_layout->data_ref().buffers[0];
+        const buffer_type& data_buffer = p_layout->data_ref().buffers[1];
+
+        const buffer_type& rhs_layout_offset_buffer = rhs.p_layout->data_ref().buffers[0];
+        const buffer_type& rhs_layout_data_buffer = rhs.p_layout->data_ref().buffers[1];
+        const auto rhs_index = rhs.m_index;
+
+        const auto& indexed_data_buffer_begin = data_buffer.cbegin() + offset_buffer.template data<offset_type>()[m_index];
+        const auto& indexed_data_buffer_end = data_buffer.cbegin() + offset_buffer.template data<offset_type>()[m_index + 1];
+
+        const auto& rhs_indexed_data_buffer_begin = rhs_layout_data_buffer.cbegin() + rhs_layout_offset_buffer.template data<offset_type>()[rhs_index];
+        const auto& rhs_indexed_data_buffer_end = rhs_layout_data_buffer.cbegin() + rhs_layout_offset_buffer.template data<offset_type>()[rhs_index + 1];
+
+        const auto is_data_equal = std::equal(indexed_data_buffer_begin, indexed_data_buffer_end, rhs_indexed_data_buffer_begin, rhs_indexed_data_buffer_end);
+        const auto is_offset_equal = (offset_buffer.template data<offset_type>()[m_index] == rhs_layout_offset_buffer.template data<offset_type>()[rhs_index]);
+
+        return is_data_equal && is_offset_equal;
     }
 
     template <class L>
