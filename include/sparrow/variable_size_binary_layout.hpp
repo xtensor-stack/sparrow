@@ -319,20 +319,13 @@ namespace sparrow
                 tmp_data_buf.resize(data_buffer.size() + shift_val);
                 // Copy initial elements
                 std::copy(data_buffer.cbegin(), data_buffer.cbegin() + offset_buffer.template data<offset_type>()[m_index], tmp_data_buf.begin());
-                std::string str(tmp_data_buf.begin(), tmp_data_buf.end());
-                std::cout << "tmp after 1st copy: " << str <<  std::endl;
                 // Copy new_inner_val
                 std::copy(new_inner_val.cbegin(), new_inner_val.cend(), tmp_data_buf.begin() + offset_buffer.template data<offset_type>()[m_index]);
-                std::string str_new(tmp_data_buf.begin(), tmp_data_buf.end());
-                std::cout << "tmp after new val copy: " << str_new <<  std::endl;
                 // Copy the elements left
                 std::copy(data_buffer.cbegin() + offset_buffer.template data<offset_type>()[m_index + 1], data_buffer.cend(), tmp_data_buf.begin() + offset_buffer.template data<offset_type>()[m_index] + static_cast<difference_type>(new_value_length));
-                std::string str_end(tmp_data_buf.begin(), tmp_data_buf.end());
-                std::cout << "tmp after end: " << str_end <<  std::endl;
                 std::swap(data_buffer, tmp_data_buf);
                 // Update offsets
-                std::cout << "lay size: " << p_layout->size() <<  " buffer data length: " << p_layout->data_ref().length << std::endl;
-                std::for_each(offset_buffer.template data<offset_type>() + static_cast<difference_type>(m_index) + 1, offset_buffer.template data<offset_type>() + layout_data_length + 1, [shift_val](auto& offset){ std::cout << " offset before " << offset << std::endl; offset += static_cast<offset_type>(shift_val); });
+                std::for_each(offset_buffer.template data<offset_type>() + static_cast<difference_type>(m_index) + 1, offset_buffer.template data<offset_type>() + layout_data_length + 1, [shift_val](auto& offset){ offset += static_cast<offset_type>(shift_val); });
             }
             else
             {
@@ -343,7 +336,7 @@ namespace sparrow
                     // Shift values
                     std::copy( data_buffer.cbegin() + offset_buffer.template data<offset_type>()[m_index + 1], data_buffer.cend(), data_buffer.begin() + offset_buffer.template data<offset_type>()[m_index] + static_cast<difference_type>(new_value_length));
                     // Update offsets 
-                    std::for_each(offset_buffer.template data<offset_type>() + static_cast<difference_type>(m_index) + 1, offset_buffer.template data<offset_type>() + layout_data_length + 1, [shift_val](auto& offset){ std::cout << " offset before " << offset << std::endl; offset -= static_cast<offset_type>(shift_val); });
+                    std::for_each(offset_buffer.template data<offset_type>() + static_cast<difference_type>(m_index) + 1, offset_buffer.template data<offset_type>() + layout_data_length + 1, [shift_val](auto& offset){ offset -= static_cast<offset_type>(shift_val); });
                 }
             }
             return *this;
@@ -355,15 +348,6 @@ namespace sparrow
     {
         buffer_type& offset_buffer = p_layout->data_ref().buffers[0];
         buffer_type& data_buffer = p_layout->data_ref().buffers[1];
-        std::string str_complete(data_buffer.begin(), data_buffer.end());
-        std::cout << "data_buffer: " << str_complete <<  std::endl;
-
-        std::string str(rhs.begin(), rhs.end());
-        std::cout << "rhs: " << str <<  std::endl;
-        std::cout << "m_index: " << offset_buffer.template data<offset_type>()[m_index] << " and " << offset_buffer.template data<offset_type>()[m_index+1]  <<  std::endl;
-
-        std::string str_zero(data_buffer.begin()+ offset_buffer.template data<offset_type>()[m_index], data_buffer.begin() + offset_buffer.template data<offset_type>()[m_index + 1]);
-        std::cout << "data buff to compare: " << str_zero <<  std::endl;
 
         return std::equal(rhs.cbegin(), rhs.cend(), data_buffer.cbegin() + offset_buffer.template data<offset_type>()[m_index], data_buffer.cbegin() + offset_buffer.template data<offset_type>()[m_index + 1]);
     }
