@@ -12,131 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <array>
 #include <memory>
-#include <optional>
 #include <string_view>
 
-#include "sparrow/c_interface.hpp"
+#include "sparrow/arrow_schema.hpp"
 
 #include "doctest/doctest.h"
 
 TEST_SUITE("C Data Interface")
 {
-    TEST_CASE("ArrowArray")
-    {
-        SUBCASE("make_array_constructor")
-        {
-            std::vector<sparrow::arrow_array_unique_ptr> children;
-            children.emplace_back(sparrow::default_arrow_array());
-            children.emplace_back(sparrow::default_arrow_array());
-            const auto children_1_ptr = children[0].get();
-            const auto children_2_ptr = children[1].get();
-
-            sparrow::arrow_array_unique_ptr dictionary(sparrow::default_arrow_array());
-            const auto dictionary_ptr = dictionary.get();
-
-            std::vector<size_t> buffers_sizes = {1};
-            const auto array = sparrow::make_arrow_array<int, std::allocator>(
-                1,
-                0,
-                0,
-                buffers_sizes,
-                std::move(children),
-                std::move(dictionary)
-            );
-            CHECK_EQ(array->length, 1);
-            CHECK_EQ(array->null_count, 0);
-            CHECK_EQ(array->offset, 0);
-            CHECK_EQ(array->n_buffers, 1);
-            CHECK_EQ(array->n_children, 2);
-            CHECK_NE(array->buffers, nullptr);
-            REQUIRE_NE(array->children, nullptr);
-            CHECK_EQ(array->children[0], children_1_ptr);
-            CHECK_EQ(array->children[1], children_2_ptr);
-            CHECK_EQ(array->dictionary, dictionary_ptr);
-            CHECK_EQ(array->release, sparrow::delete_array<int, std::allocator>);
-            CHECK_NE(array->private_data, nullptr);
-        }
-
-        SUBCASE("make_array_constructor no children and dictionary")
-        {
-            std::vector<sparrow::arrow_array_unique_ptr> children;
-            const auto array = sparrow::make_arrow_array<int, std::allocator>(
-                1,
-                0,
-                0,
-                std::array<size_t, 1>{1},
-                std::move(children),
-                sparrow::arrow_array_unique_ptr()
-            );
-            CHECK_EQ(array->length, 1);
-            CHECK_EQ(array->null_count, 0);
-            CHECK_EQ(array->offset, 0);
-            CHECK_EQ(array->n_buffers, 1);
-            CHECK_EQ(array->n_children, 0);
-            CHECK_NE(array->buffers, nullptr);
-            CHECK_EQ(array->children, nullptr);
-            CHECK_EQ(array->dictionary, nullptr);
-            CHECK_EQ(array->release, sparrow::delete_array<int, std::allocator>);
-            CHECK_NE(array->private_data, nullptr);
-        }
-
-        SUBCASE("ArrowArray release")
-        {
-            std::vector<sparrow::arrow_array_unique_ptr> children;
-            children.emplace_back(sparrow::default_arrow_array());
-            children.emplace_back(sparrow::default_arrow_array());
-            sparrow::arrow_array_unique_ptr dictionary(sparrow::default_arrow_array());
-            auto array = sparrow::make_arrow_array<int, std::allocator>(
-                1,
-                0,
-                0,
-                std::array<size_t, 1>{1},
-                std::move(children),
-                std::move(dictionary)
-            );
-
-            array->release(array.get());
-
-            CHECK_EQ(array->length, 0);
-            CHECK_EQ(array->null_count, 0);
-            CHECK_EQ(array->offset, 0);
-            CHECK_EQ(array->n_buffers, 0);
-            CHECK_EQ(array->n_children, 0);
-            CHECK_EQ(array->buffers, nullptr);
-            CHECK_EQ(array->children, nullptr);
-            CHECK_EQ(array->release, nullptr);
-            CHECK_EQ(array->private_data, nullptr);
-        }
-
-        SUBCASE("ArrowArray release no children and dictionary")
-        {
-            std::vector<sparrow::arrow_array_unique_ptr> children;
-            auto array = sparrow::make_arrow_array<int, std::allocator>(
-                1,
-                0,
-                0,
-                std::array<size_t, 1>{1},
-                std::move(children),
-                sparrow::arrow_array_unique_ptr()
-            );
-
-            array->release(array.get());
-
-            CHECK_EQ(array->length, 0);
-            CHECK_EQ(array->null_count, 0);
-            CHECK_EQ(array->offset, 0);
-            CHECK_EQ(array->n_buffers, 0);
-            CHECK_EQ(array->n_children, 0);
-            CHECK_EQ(array->buffers, nullptr);
-            CHECK_EQ(array->children, nullptr);
-            CHECK_EQ(array->release, nullptr);
-            CHECK_EQ(array->private_data, nullptr);
-        }
-    }
-
-
     TEST_CASE("ArrowSchema")
     {
         SUBCASE("make_schema_constructor")
@@ -148,7 +32,9 @@ TEST_SUITE("C Data Interface")
             const auto children_1_ptr = children[0].get();
             const auto children_2_ptr = children[1].get();
 
-            sparrow::arrow_schema_unique_ptr dictionary(sparrow::default_arrow_schema());
+            auto dictionnary = sparrow::default_arrow_schema();
+            dictionnary->name = "dictionary";
+            sparrow::arrow_schema_unique_ptr dictionary(std::move(dictionnary));
             const auto dictionary_ptr = dictionary.get();
 
             constexpr std::string_view format = "format";

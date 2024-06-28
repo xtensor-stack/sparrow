@@ -15,7 +15,10 @@
 #pragma once
 
 #include <iterator>
+#include <memory>
 #include <type_traits>
+#include <variant>
+
 
 namespace sparrow::mpl
 {
@@ -409,5 +412,29 @@ namespace sparrow::mpl
         __builtin_unreachable();
 #endif
     }
+
+    // Concept to check if a type is a unique_ptr
+    // TODO: To rename
+    template <typename T>
+    concept is_unique_ptr = mpl::is_type_instance_of_v<std::remove_reference_t<T>, std::unique_ptr>;
+
+    // Concept to check if a type is a shared_ptr
+    // TODO: To rename
+    template <typename T>
+    concept is_shared_ptr = mpl::is_type_instance_of_v<std::remove_reference_t<T>, std::shared_ptr>;
+
+    // Concept to check if a type is either a unique_ptr or a shared_ptr
+    // TODO: To renamle
+    template <typename T>
+    concept is_smart_ptr = is_unique_ptr<T> || is_shared_ptr<T>;
+
+    template<typename T>
+    struct variant_helper : std::false_type {};
+
+    template<typename... Ts>
+    struct variant_helper<std::variant<Ts...>> : std::true_type {};
+
+    template<typename T>
+    concept variant = variant_helper<std::remove_cvref_t<T>>::value;
 
 }
