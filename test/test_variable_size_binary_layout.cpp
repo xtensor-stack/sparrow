@@ -89,15 +89,15 @@ namespace sparrow
             CHECK(!cref1.has_value());
             CHECK_EQ(cref2.value(), words[3]);
 
-            l[0].value() = "is";
-            l[2].value() = "unpreparedandmore";
+            l[0].value() = std::string("is");
+            l[2].value() = std::string("unpreparedandmore");
 
             CHECK_EQ(cref0.value(), std::string("is"));
             CHECK(!cref1.has_value());
             CHECK_EQ(cref2.value(), std::string("unpreparedandmore"));
 
-            l[0].value() = "are";
-            l[2].value() = "ok";
+            l[0].value() = std::string("are");
+            l[2].value() = std::string("ok");
 
             CHECK_EQ(cref0.value(), std::string("are"));
             CHECK(!cref1.has_value());
@@ -156,7 +156,7 @@ namespace sparrow
 //             CHECK_EQ(iter, l.cbegin());
 //         }
 
-        TEST_CASE("basic_vsbl")
+        TEST_CASE("vs_binary_reference")
         {
             using layout_type = variable_size_binary_layout<std::string, std::string_view>;
 
@@ -184,16 +184,16 @@ namespace sparrow
 
             SUBCASE("inner_reference")
             {
-                cref3.value() = "unpreparedandmore";
+                cref3.value() = std::string("unpreparedandmore");
 
                 CHECK_EQ(cref0.value(), words[0]);
                 CHECK_EQ(cref1.value(), words[1]);
                 CHECK_EQ(cref2.value(), words[2]);
                 CHECK_EQ(cref3.value(), std::string("unpreparedandmore"));
 
-                cref0.value() = "he";
-                cref1.value() = "is";
-                cref2.value() = "";
+                cref0.value() = std::string("he");
+                cref1.value() = std::string("is");
+                cref2.value() = std::string("");
 
                 CHECK_EQ(cref0.value(), std::string("he"));
                 CHECK_EQ(cref1.value(), std::string("is"));
@@ -201,7 +201,7 @@ namespace sparrow
                 CHECK_EQ(cref3.value(), std::string("unpreparedandmore"));
             }
 
-            SUBCASE("operator==with_self_type")
+            SUBCASE("operator==self_type")
             {
                 vs_binary_reference<layout_type> vs_ref0(&l, 0);
                 CHECK_EQ(cref0.value(), vs_ref0);
@@ -209,6 +209,33 @@ namespace sparrow
                 vs_binary_reference<layout_type> vs_ref3(&l, 3);
                 CHECK_EQ(cref3.value(), vs_ref3);
             }
+
+            SUBCASE("operator=self_type")
+            {
+                constexpr std::array<std::string_view, 4> replacement_words = {"this", "is", "a", "replacement"};
+
+                array_data::bitmap_type rpl_bitmap{replacement_words.size(), true};
+                array_data rpl_vs_data = make_default_array_data<layout_type>(replacement_words, rpl_bitmap, 0);
+
+                layout_type rpl_l(rpl_vs_data);
+                CHECK_EQ(rpl_l.size(), rpl_vs_data.length - rpl_vs_data.offset);
+
+                vs_binary_reference<layout_type> rpl_vs_ref0(&rpl_l, 0);
+                vs_binary_reference<layout_type> rpl_vs_ref1(&rpl_l, 1);
+                vs_binary_reference<layout_type> rpl_vs_ref2(&rpl_l, 2);
+                vs_binary_reference<layout_type> rpl_vs_ref3(&rpl_l, 3);
+
+                cref0.value() = std::move(rpl_vs_ref0);
+                cref1.value() = std::move(rpl_vs_ref1);
+                cref2.value() = std::move(rpl_vs_ref2);
+                cref3.value() = std::move(rpl_vs_ref3);
+
+                CHECK_EQ(cref0.value(), std::string("this"));
+                CHECK_EQ(cref1.value(), std::string("is"));
+                CHECK_EQ(cref2.value(), std::string("a"));
+                CHECK_EQ(cref3.value(), std::string("replacement"));
+            }
+
             // TODO add tests for the different overloads of operator = and ==
         }
     }

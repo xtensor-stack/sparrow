@@ -96,8 +96,10 @@ namespace sparrow
 
         vs_binary_reference(L* layout, size_type index);
 
-//         template <class N = std::string>
-        self_type& operator=(std::string&& new_inner_val);
+        template <class N = std::string>
+        self_type& operator=(N&& new_inner_val);
+
+        self_type& operator=(self_type&& new_inner_val);
 
         template <class N = std::string>
         bool operator==(const N& rhs) const;
@@ -302,8 +304,8 @@ namespace sparrow
      **************************************/
 
     template <class L>
-//     template <class N>
-    auto vs_binary_reference<L>::operator=(std::string&& new_inner_val) -> self_type&
+    template <class N>
+    auto vs_binary_reference<L>::operator=(N&& new_inner_val) -> self_type&
     {
             buffer_type& offset_buffer = p_layout->data_ref().buffers[0];
             buffer_type& data_buffer = p_layout->data_ref().buffers[1];
@@ -343,6 +345,51 @@ namespace sparrow
     }
 
     template <class L>
+    auto vs_binary_reference<L>::operator=(self_type&& new_inner_val) -> self_type&
+    {
+        buffer_type& offset_buffer = p_layout->data_ref().buffers[0];
+        buffer_type& data_buffer = p_layout->data_ref().buffers[1];
+        const auto layout_data_length = p_layout->data_ref().length;
+
+        const buffer_type& new_offset_buffer = new_inner_val.p_layout->data_ref().buffers[0];
+        const buffer_type& new_data_buffer = new_inner_val.p_layout->data_ref().buffers[1];
+        const auto new_idx = new_inner_val.m_index;
+
+        auto initial_value_length = static_cast<size_type>(offset_buffer.template data<offset_type>()[m_index + 1] - offset_buffer.template data<offset_type>()[m_index]);
+        auto new_value_length = static_cast<size_type>(new_offset_buffer.template data<offset_type>()[new_idx + 1] - new_offset_buffer.template data<offset_type>()[new_idx]);
+
+        if (new_value_length > initial_value_length)
+        {
+            auto shift_val = new_value_length - initial_value_length;
+            // Allocate tmp buffer for data
+            buffer_type tmp_data_buf;
+            tmp_data_buf.resize(data_buffer.size() + shift_val);
+            // Copy initial elements
+            std::copy(data_buffer.cbegin(), data_buffer.cbegin() + offset_buffer.template data<offset_type>()[m_index], tmp_data_buf.begin());
+            // Copy new value
+            std::copy(new_data_buffer.cbegin() + new_offset_buffer.template data<offset_type>()[new_idx], new_data_buffer.cbegin() + new_offset_buffer.template data<offset_type>()[new_idx + 1], tmp_data_buf.begin() + offset_buffer.template data<offset_type>()[m_index]);
+            // Copy the elements left
+            std::copy(data_buffer.cbegin() + offset_buffer.template data<offset_type>()[m_index + 1], data_buffer.cend(), tmp_data_buf.begin() + offset_buffer.template data<offset_type>()[m_index] + static_cast<difference_type>(new_value_length));
+            std::swap(data_buffer, tmp_data_buf);
+            // Update offsets
+            std::for_each(offset_buffer.template data<offset_type>() + static_cast<difference_type>(m_index) + 1, offset_buffer.template data<offset_type>() + layout_data_length + 1, [shift_val](auto& offset){ offset += static_cast<offset_type>(shift_val); });
+        }
+        else
+        {
+            std::copy(new_data_buffer.cbegin() + new_offset_buffer.template data<offset_type>()[new_idx], new_data_buffer.cbegin() + new_offset_buffer.template data<offset_type>()[new_idx + 1], data_buffer.begin() + offset_buffer.template data<offset_type>()[m_index]);
+            if (new_value_length < initial_value_length)
+            {
+                std::size_t shift_val = initial_value_length - new_value_length;
+                // Shift values
+                std::copy( data_buffer.cbegin() + offset_buffer.template data<offset_type>()[m_index + 1], data_buffer.cend(), data_buffer.begin() + offset_buffer.template data<offset_type>()[m_index] + static_cast<difference_type>(new_value_length));
+                // Update offsets
+                std::for_each(offset_buffer.template data<offset_type>() + static_cast<difference_type>(m_index) + 1, offset_buffer.template data<offset_type>() + layout_data_length + 1, [shift_val](auto& offset){ offset -= static_cast<offset_type>(shift_val); });
+            }
+        }
+        return *this;
+    }
+
+    template <class L>
     template <class N>
     bool vs_binary_reference<L>::operator==(const N& rhs) const
     {
@@ -356,6 +403,7 @@ namespace sparrow
     // Add overloads for:
     // L::inner_value_type, L::inner_const_reference
     // TODO Add corresponding prototypes
+    // TODO use concepts
 
     template <class L>
     bool vs_binary_reference<L>::operator==(const self_type& rhs) const
