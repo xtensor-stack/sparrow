@@ -117,4 +117,25 @@ namespace sparrow
 
     // transfrom
     static_assert(std::same_as<mpl::typelist<int*, char*>, mpl::transform<std::add_pointer_t, test_list>>);
+
+    // is_unique_ptr
+    static_assert(mpl::is_unique_ptr<std::unique_ptr<int>>);
+    static_assert(not mpl::is_unique_ptr<int>);
+    static_assert(not mpl::is_unique_ptr<std::shared_ptr<int>>);
+    static_assert(not mpl::is_unique_ptr<std::weak_ptr<int>>);
+    static_assert(not mpl::is_unique_ptr<int*>);
+
+    // is_shared_ptr
+    static_assert(mpl::is_shared_ptr<std::shared_ptr<int>>);
+    static_assert(not mpl::is_shared_ptr<int>);
+    static_assert(not mpl::is_shared_ptr<std::unique_ptr<int>>);
+    static_assert(not mpl::is_shared_ptr<std::weak_ptr<int>>);
+    static_assert(not mpl::is_shared_ptr<int*>);
+
+    // is_smart_ptr
+    static_assert(mpl::is_smart_ptr<std::unique_ptr<int>>);
+    static_assert(mpl::is_smart_ptr<std::shared_ptr<int>>);
+    static_assert(not mpl::is_smart_ptr<int>);
+    static_assert(not mpl::is_smart_ptr<std::weak_ptr<int>>);
+    static_assert(not mpl::is_smart_ptr<int*>);
 }

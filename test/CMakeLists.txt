@@ -42,9 +42,11 @@ set(SPARROW_TESTS_SOURCES
     test_array_data_concepts.cpp
     test_array_data_creation.cpp
     test_array_data_factory.cpp
+    test_array_data.cpp
+    test_arrow_array.cpp
+    test_arrow_schema.cpp
     test_buffer_adaptor.cpp
     test_buffer.cpp
-    test_c_data_interface.cpp
     test_dictionary_encoded_layout.cpp
     test_dynamic_bitset.cpp
     test_fixed_size_layout.cpp
@@ -53,8 +55,8 @@ set(SPARROW_TESTS_SOURCES
     test_mpl.cpp
     test_null_layout.cpp
     test_traits.cpp
-    test_typed_array.cpp
     test_typed_array_timestamp.cpp
+    test_typed_array.cpp
     test_variable_size_binary_layout.cpp
 )
 set(test_target "test_sparrow_lib")
