@@ -52,7 +52,7 @@ jobs:
       run: sudo apt install ${{matrix.sys.stdlib}}-dev -y
 
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Set conda environment
       uses: mamba-org/setup-micromamba@main
@@ -75,4 +75,11 @@ jobs:
 
     - name: Run tests
       working-directory: build
-      run: ctest -C ${{matrix.config.name}} --output-on-failure
+      run: cmake --build . --config ${{matrix.config.name}} --target run_tests_with_junit_report
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: success() || failure()
+      with:
+        name: test_sparrow_lib_report_Linux_${{ matrix.sys.compiler }}_${{ matrix.sys.version }}_${{ matrix.sys.stdlib }}_${{ matrix.config.name }}_date-polyfill_${{ matrix.sys.date-polyfill}}
+        path: '**/test_sparrow_lib_report.xml'
