@@ -12,3 +12,6 @@ dependencies:
   # For now, we use HowardHinnant/date as a replacement if we are compiling with libc++.
   # TODO: remove this once libc++ has full support for P0355R7.
   - howardhinnant_date
+  # Documentation
+  - doxygen
+  - graphviz

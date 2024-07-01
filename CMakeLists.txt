@@ -44,6 +44,8 @@ message(STATUS "Building sparrow v${${PROJECT_NAME}_VERSION}")
 # =============
 
 OPTION(BUILD_TESTS "Build sparrow test suite" OFF)
+OPTION(BUILD_DOCS  "Build sparrow documentation" OFF)
+OPTION(BUILD_EXAMPLES "Build sparrow examples" OFF)
 OPTION(USE_DATE_POLYFILL "Use date polyfill implementation" ON)
 
 include(CheckCXXSymbolExists)
@@ -130,6 +132,19 @@ if (BUILD_TESTS)
     enable_testing()
     add_subdirectory(test)
 endif ()
+
+
+# Docs 
+# ====
+if(BUILD_DOCS)
+    add_subdirectory(docs)
+endif()
+
+# Exacmples 
+# ====
+if(BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif()
 
 # Installation
 # ============

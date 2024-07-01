@@ -1,0 +1,59 @@
+name: doxygen-docs
+on: [push, pull_request]
+
+defaults:
+  run:
+    shell: bash -e -l {0}
+jobs:
+  build_docs:
+    runs-on: ubuntu-latest
+        
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set conda environment
+      uses: mamba-org/setup-micromamba@main
+      with:
+        environment-name: myenv
+        environment-file: environment-dev.yml
+        init-shell: bash
+        cache-downloads: true
+
+    - name: Configure using CMake
+      run: cmake -G Ninja -Bbuild -DCMAKE_BUILD_TYPE:STRING=Debug -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX -DBUILD_TESTS=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DBUILD_DOCS=ON 
+
+    - name: Build docs target
+      run: cmake --build build --target docs
+      
+    - name: Upload Pages artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: build/docs/html
+
+
+  deploy:
+    # only run on main branch
+    if: github.ref == 'refs/heads/main' && github.repository == 'man-group/sparrow'
+
+    # Add a dependency to the build job
+    needs: build_docs
+
+    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+    permissions:
+      contents: read   # to read the Pages artifact
+      pages: write      # to deploy to Pages
+      id-token: write   # to verify the deployment originates from an appropriate source
+
+    # Deploy to the github-pages environment
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    # Specify runner + deployment step
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4 # or specific "vX.X.X" version tag for this action
+    
