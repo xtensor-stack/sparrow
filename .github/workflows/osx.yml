@@ -24,7 +24,7 @@ jobs:
         - { name: Debug }
         - { name: Release }
         compiler:
-        # - clang # TODO: Uncomment this line when we have fixed the compilation issue
+        - clang
         - apple-clang
 
     steps:
