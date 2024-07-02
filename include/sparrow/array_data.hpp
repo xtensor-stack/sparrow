@@ -152,6 +152,7 @@ namespace sparrow
         using layout_type = L;
         using value_type = typename L::inner_value_type;
         using reference = typename L::inner_reference;
+        using const_reference = typename L::const_inner_reference;
         using bitmap_reference = typename L::bitmap_reference;
         using size_type = typename L::size_type;
 
@@ -164,8 +165,8 @@ namespace sparrow
         bool has_value() const;
         explicit operator bool() const;
 
-        value_type& value();
-        const value_type& value() const;
+        reference value();
+        const_reference value() const;
 
         self_type& operator=(const self_type& rhs);
         self_type& operator=(self_type&& rhs);
@@ -366,14 +367,14 @@ namespace sparrow
     }
 
     template <class L>
-    auto reference_proxy<L>::value() -> value_type&
+    auto reference_proxy<L>::value() -> reference
     {
         SPARROW_ASSERT_TRUE(has_value());
         return m_val_ref;
     }
 
     template <class L>
-    auto reference_proxy<L>::value() const -> const value_type&
+    auto reference_proxy<L>::value() const -> const_reference
     {
         SPARROW_ASSERT_TRUE(has_value());
         return m_val_ref;

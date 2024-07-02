@@ -120,7 +120,7 @@ namespace sparrow
     {
         static constexpr data_type type_id = data_type::STRING;
         using value_type = std::string;
-        using default_layout = variable_size_binary_layout<value_type, std::string_view, const std::string_view>;  // FIXME: this is incorrect, change when we have the right types
+        using default_layout = variable_size_binary_layout<value_type, const std::string_view>;  // FIXME: this is incorrect, change when we have the right types
     };
 
     template <>
@@ -128,7 +128,7 @@ namespace sparrow
     {
         static constexpr data_type type_id = data_type::STRING;
         using value_type = std::vector<byte_t>;
-        using default_layout = variable_size_binary_layout<value_type, std::span<byte_t>, const std::span<byte_t>>;  // FIXME: this is incorrect, change when we have the right types
+        using default_layout = variable_size_binary_layout<value_type, const std::span<byte_t>>;  // FIXME: this is incorrect, change when we have the right types
     };
 
     template <>

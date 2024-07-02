@@ -109,6 +109,7 @@ namespace sparrow
         using sub_layout = SL;
         using inner_reference = reference_proxy<SL>;
         using inner_const_reference = const_reference_proxy<SL>;
+        using const_inner_reference = const_reference_proxy<SL>;
         using bitmap_type = array_data::bitmap_type;
         using bitmap_const_reference = bitmap_type::const_reference;
         using value_type = SL::value_type;
@@ -161,7 +162,11 @@ namespace sparrow
 
     private:
 
-        const indexes_layout& get_const_indexes_layout() const;
+        indexes_layout& get_indexes_layout();
+        const indexes_layout& get_indexes_layout() const;
+
+        sub_layout& get_sub_layout();
+        const sub_layout& get_sub_layout() const;
 
         const_value_iterator value_cbegin() const;
         const_value_iterator value_cend() const;
@@ -273,10 +278,10 @@ namespace sparrow
     auto dictionary_encoded_layout<T, SL, OT>::operator[](size_type i) const -> const_reference
     {
         SPARROW_ASSERT_TRUE(i < size());
-        const auto index = (*m_indexes_layout)[i];
+        const auto index = get_indexes_layout()[i];
         if (index.has_value())
         {
-            return (*m_sub_layout)[index.value()];
+            return get_sub_layout()[index.value()];
         }
         else
         {
@@ -287,38 +292,59 @@ namespace sparrow
     template <std::integral T, class SL, layout_offset OT>
     auto dictionary_encoded_layout<T, SL, OT>::bitmap() const -> const_bitmap_range
     {
-        return get_const_indexes_layout().bitmap();
+        return get_indexes_layout().bitmap();
+    }
+
+    template <std::integral T, class SL, layout_offset OT>
+    typename dictionary_encoded_layout<T, SL, OT>::indexes_layout&
+    dictionary_encoded_layout<T, SL, OT>::get_indexes_layout()
+    {
+        return *(m_indexes_layout.get());
     }
 
     template <std::integral T, class SL, layout_offset OT>
     const typename dictionary_encoded_layout<T, SL, OT>::indexes_layout&
-    dictionary_encoded_layout<T, SL, OT>::get_const_indexes_layout() const
+    dictionary_encoded_layout<T, SL, OT>::get_indexes_layout() const
     {
         return *const_cast<const indexes_layout*>(m_indexes_layout.get());
     }
 
     template <std::integral T, class SL, layout_offset OT>
+    typename dictionary_encoded_layout<T, SL, OT>::sub_layout&
+    dictionary_encoded_layout<T, SL, OT>::get_sub_layout()
+    {
+        return *(m_sub_layout.get());
+    }
+
+    template <std::integral T, class SL, layout_offset OT>
+    const typename dictionary_encoded_layout<T, SL, OT>::sub_layout&
+    dictionary_encoded_layout<T, SL, OT>::get_sub_layout() const
+    {
+        return *const_cast<const sub_layout*>(m_sub_layout.get());
+    }
+
+    template <std::integral T, class SL, layout_offset OT>
     auto dictionary_encoded_layout<T, SL, OT>::cbegin() const -> const_iterator
     {
-        return const_iterator(value_cbegin(), get_const_indexes_layout().bitmap().begin());
+        return const_iterator(value_cbegin(), get_indexes_layout().bitmap().begin());
     }
 
     template <std::integral T, class SL, layout_offset OT>
     auto dictionary_encoded_layout<T, SL, OT>::cend() const -> const_iterator
     {
-        return const_iterator(value_cend(), get_const_indexes_layout().bitmap().end());
+        return const_iterator(value_cend(), get_indexes_layout().bitmap().end());
     }
 
     template <std::integral T, class SL, layout_offset OT>
     auto dictionary_encoded_layout<T, SL, OT>::value_cbegin() const -> const_value_iterator
     {
-        return const_value_iterator(get_const_indexes_layout().values().begin(), *m_sub_layout);
+        return const_value_iterator(get_indexes_layout().values().begin(), get_sub_layout());
     }
 
     template <std::integral T, class SL, layout_offset OT>
     auto dictionary_encoded_layout<T, SL, OT>::value_cend() const -> const_value_iterator
     {
-        return const_value_iterator(get_const_indexes_layout().values().end(), *m_sub_layout);
+        return const_value_iterator(get_indexes_layout().values().end(), get_sub_layout());
     }
 
     template <std::integral T, class SL, layout_offset OT>

@@ -55,14 +55,14 @@ TEST_SUITE("typed_array")
 {
     TEST_CASE("default constructor for variable_size_binary_layout")
     {
-        using Layout = variable_size_binary_layout<std::string, std::string_view, const std::string_view>;
+        using Layout = variable_size_binary_layout<std::string, const std::string_view>;
         const typed_array<std::string, Layout> ta_for_vsbl;
         CHECK_EQ(ta_for_vsbl.size(), 0);
     }
 
     TEST_CASE("default constructor for dictionary_encoded_layout")
     {
-        using SubLayout = variable_size_binary_layout<std::string, std::string_view, const std::string_view>;
+        using SubLayout = variable_size_binary_layout<std::string, const std::string_view>;
         using Layout = dictionary_encoded_layout<std::uint32_t, SubLayout>;
         typed_array<uint32_t, Layout> ta_for_dels;
         CHECK_EQ(ta_for_dels.size(), 0);
