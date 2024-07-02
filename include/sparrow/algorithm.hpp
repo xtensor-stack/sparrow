@@ -14,6 +14,7 @@
 
 #pragma once
 
+#include <version> // required for standard library implementation pre-processor defines to be available
 #include <algorithm>
 #include <compare>
 #include <concepts>
@@ -122,6 +123,29 @@ namespace sparrow
     constexpr auto lexicographical_compare(const R1& r1, const R2& r2) -> bool
     {
         return lexicographical_compare_three_way(r1, r2) == std::strong_ordering::less;
+    }
+
+    template <std::input_iterator InputIt1, std::input_iterator InputIt2>
+    constexpr
+    bool equal(InputIt1 first1, InputIt1 last1, InputIt2 first2, InputIt2 last2)
+    {
+        // see https://github.com/man-group/sparrow/issues/108
+#if defined(_LIBCPP_VERSION) && (_LIBCPP_VERSION < 180000)
+        if(std::distance(first1, last1) != std::distance(first2, last2))
+        {
+            return false;
+        }
+
+        for(; first1 != last1; ++first1, ++first2){
+            if (!(*first1 == *first2)){
+                return false;
+            }
+        }
+
+        return true;
+#else
+        return std::equal(first1, last1, first2, last2);
+#endif
     }
 
 }  // namespace sparrow
