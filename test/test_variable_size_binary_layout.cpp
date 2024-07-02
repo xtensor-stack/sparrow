@@ -184,7 +184,7 @@ namespace sparrow
 
             SUBCASE("inner_reference")
             {
-                cref3.value() = std::string("unpreparedandmore");
+                cref3.value() = std::string_view("unpreparedandmore");
 
                 CHECK_EQ(cref0.value(), words[0]);
                 CHECK_EQ(cref1.value(), words[1]);
@@ -197,7 +197,7 @@ namespace sparrow
 
                 CHECK_EQ(cref0.value(), std::string("he"));
                 CHECK_EQ(cref1.value(), std::string("is"));
-                CHECK_EQ(cref2.value(), std::string(""));
+                CHECK_EQ(cref2.value(), std::string_view(""));
                 CHECK_EQ(cref3.value(), std::string("unpreparedandmore"));
             }
 
@@ -235,8 +235,6 @@ namespace sparrow
                 CHECK_EQ(cref2.value(), std::string("a"));
                 CHECK_EQ(cref3.value(), std::string("replacement"));
             }
-
-            // TODO add tests for the different overloads of operator = and ==
         }
     }
 }
