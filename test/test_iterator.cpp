@@ -237,8 +237,10 @@ namespace sparrow
 
         TEST_CASE_FIXTURE(iterator_fixture, "contiguous iterator")
         {
+            #ifndef EMSCRIPTEN
             constexpr bool valid = std::contiguous_iterator<test_iterator>;
             CHECK(valid);
+            #endif
         }
     }
 

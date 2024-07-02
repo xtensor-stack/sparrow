@@ -21,7 +21,7 @@
 #include <numeric>
 #include <type_traits>
 #include <unordered_set>
-
+#include <version>
 #include "sparrow/algorithm.hpp"
 #include "sparrow/array_data.hpp"
 #include "sparrow/array_data_factory.hpp"
@@ -467,7 +467,7 @@ namespace sparrow
     bool operator==(const typed_array<T, Layout>& ta1, const typed_array<T, Layout>& ta2)
     {   
         // see https://github.com/man-group/sparrow/issues/108
-#if defined(_LIBCPP_VERSION) && (_LIBCPP_VERSION < 180000)
+#if( defined(_LIBCPP_VERSION) && (_LIBCPP_VERSION < 180000)) || defined(EMSCRIPTEN)
         if(ta1.size() != ta2.size())
         { 
             return false;

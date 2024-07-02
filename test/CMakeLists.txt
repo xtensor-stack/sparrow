@@ -62,6 +62,8 @@ add_executable(${test_target} ${SPARROW_TESTS_SOURCES})
 target_link_libraries(${test_target} PRIVATE sparrow doctest::doctest)
 add_test(NAME ${test_target} COMMAND ${test_target})
 
+set(link_options)
+
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     set(compiles_options
         /permissive-
@@ -113,9 +115,22 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "C
         $<$<CXX_COMPILER_ID:GNU>:-Wduplicated-cond> # warn if if / else chain has duplicated conditions
         $<$<CXX_COMPILER_ID:GNU>:-Wlogical-op> # warn about logical operations being used where bitwise were probably wanted
         $<$<CXX_COMPILER_ID:GNU>:-Wuseless-cast>) # warn if you perform a cast to the same type
-endif()
+
+
+
+        if(EMSCRIPTEN)
+            message(STATUS "Emscripten detected")
+            set(compiles_options ${compiles_options} -Wno-shorten-64-to-32)
+
+            # enable exceptions
+            set(compiles_options ${compiles_options} -fexceptions)
+            set(link_options ${link_options} -fexceptions -s WASM_BIGINT)
+        endif()
+
+endif()    
 
 target_compile_options(${test_target} PRIVATE ${compiles_options})
+target_link_options(${test_target} PRIVATE ${link_options})
 
 # We do not use non-standard C++
 set_target_properties(${test_target} PROPERTIES CMAKE_CXX_EXTENSIONS OFF)

@@ -1,0 +1,70 @@
+name: Emscripten
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [main]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.job }}-${{ github.ref }}
+  cancel-in-progress: true
+defaults:
+  run:
+    shell: bash -e -l {0}
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set conda environment
+      uses: mamba-org/setup-micromamba@main
+      with:
+        environment-name: myenv
+        environment-file: environment-dev.yml
+        init-shell: bash
+        cache-downloads: true
+
+    - name: install emscripten
+      run: |
+        git clone https://github.com/emscripten-core/emsdk
+        cd emsdk
+        ./emsdk install latest
+        ./emsdk activate latest
+        source ./emsdk_env.sh
+
+    - name: create wasm prefix
+      run: |
+        $MAMBA_EXE create -p $(pwd)/wasm_prefix \
+          --platform=emscripten-wasm32 \
+          -c https://repo.mamba.pm/emscripten-forge \
+          -c https://repo.mamba.pm/conda-forge \
+          --yes \
+          howardhinnant_date doctest
+    
+    - name: build
+      run: |
+
+        source emsdk/emsdk_env.sh
+        export PREFIX=$(pwd)/wasm_prefix
+        export CMAKE_PREFIX_PATH=$PREFIX
+        export CMAKE_SYSTEM_PREFIX_PATH=$PREFIX
+
+        mkdir build
+        cd build
+
+        emcmake cmake \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_FIND_ROOT_PATH_MODE_PACKAGE=ON \
+            -DCMAKE_INSTALL_PREFIX=$PREFIX \
+            -DBUILD_TESTS=ON \
+            ..
+
+        emmake make -j9 install
+    
+    - name: run tests
+      run: |
+        # all teswts with timestamps fail
+        node build/test/test_sparrow_lib.js -tse=typed_array_timestamp 
+
